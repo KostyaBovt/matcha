@@ -74,27 +74,38 @@ Vagrant.configure("2") do |config|
 
   # provisioning
   config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+
     # installing nginx
-    apt-get install -y nginx
+    sudo apt-get install -y nginx
 
     # installing pip/setuptools/wheel
-    apt-get install -y python-pip python-dev
+    sudo apt-get install -y python-pip python-dev
 
     # install virtualenv
-    pip install virtualenv
+    sudo pip install virtualenv
 
-    #activate virtual enviroment
-    cd /vagrant
-    mkdir app
-    virtualenv app_venv
-    source app_venv/bin/activate
+    # activate virtual enviroment
+    virtualenv /vagrant/app_venv
+    source /vagrant/app_venv/bin/activate
 
-    pip install uwsgi
+    sudo /vagrant/app_venv/bin/pip install uwsgi flask
 
-    # config nginx by copy config TO TEST THIS:
-    # sudo cp nginx_config.conf /etc/nginx/nginx.conf
+    # config nginx by copy config
+    sudo cp /vagrant/nginx_config.conf /etc/nginx/sites-available/matcha
+    sudo ln -s /etc/nginx/sites-available/matcha /etc/nginx/sites-enabled
+    sudo rm /etc/nginx/sites-enabled/default
 
-    # then restart nginx and run uwsgi by app_venv/bin/uwsgi --ini uwcgi_config.ini 
+    # then restart nginx
+    sudo service nginx stop
+    sudo service nginx start
+
+    # run uwsgi
+    sudo cp /vagrant/matcha_config.conf /etc/init/matcha.conf
+    sudo start matcha
+
+    # change deploy folder owners
+    sudo chown vagrant:www-data -R /vagrant/
 
   SHELL
 
