@@ -17,7 +17,8 @@ Vagrant.configure("2") do |config|
   # for box LXC
   config.vm.box = "fgrehm/trusty64-lxc"
   config.vm.network "forwarded_port", guest: 80, host: 8480
-
+  config.vm.network "forwarded_port", guest: 4200, host: 4200
+  
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
@@ -86,13 +87,13 @@ Vagrant.configure("2") do |config|
     sudo pip install virtualenv
 
     # activate virtual enviroment
-    virtualenv /vagrant/app_venv
-    source /vagrant/app_venv/bin/activate
+    virtualenv /vagrant/backend/app_venv
+    source /vagrant/backend/app_venv/bin/activate
 
-    sudo /vagrant/app_venv/bin/pip install uwsgi flask
+    sudo /vagrant/backend/app_venv/bin/pip install uwsgi flask
 
     # config nginx by copy config
-    sudo cp /vagrant/nginx_config.conf /etc/nginx/sites-available/matcha
+    sudo cp /vagrant/backend/config/nginx_config.conf /etc/nginx/sites-available/matcha
     sudo ln -s /etc/nginx/sites-available/matcha /etc/nginx/sites-enabled
     sudo rm /etc/nginx/sites-enabled/default
 
@@ -101,11 +102,17 @@ Vagrant.configure("2") do |config|
     sudo service nginx start
 
     # run uwsgi
-    sudo cp /vagrant/matcha_config.conf /etc/init/matcha.conf
+    sudo cp /vagrant/backend/config/matcha_config.conf /etc/init/matcha.conf
     sudo start matcha
 
     # change deploy folder owners
     sudo chown vagrant:www-data -R /vagrant/
+
+    # install nodejs npm
+    # curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+    # sudo apt-get install -y nodejs
+    # sudo npm install --unsafe-perm -g @angular/cli
+
 
   SHELL
 
