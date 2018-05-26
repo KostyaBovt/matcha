@@ -75,6 +75,10 @@ Vagrant.configure("2") do |config|
 
   # provisioning
   config.vm.provision "shell", inline: <<-SHELL
+    # something that set locales
+    sudo locale-gen uk_UA.UTF-8 uk_UA uk_UA.UTF-8
+    sudo dpkg-reconfigure locales
+
     sudo apt-get update
 
     # installing nginx
@@ -90,7 +94,7 @@ Vagrant.configure("2") do |config|
     virtualenv /vagrant/backend/app_venv
     source /vagrant/backend/app_venv/bin/activate
 
-    sudo /vagrant/backend/app_venv/bin/pip install uwsgi flask
+    sudo /vagrant/backend/app_venv/bin/pip install uwsgi flask Flask-Mail
 
     # config nginx by copy config
     sudo cp /vagrant/backend/config/nginx_config.conf /etc/nginx/sites-available/matcha
@@ -104,6 +108,15 @@ Vagrant.configure("2") do |config|
     # run uwsgi
     sudo cp /vagrant/backend/config/matcha_config.conf /etc/init/matcha.conf
     sudo start matcha
+
+    # install psql
+    sudo apt-get install postgresql postgresql-contrib
+
+    # if locales was not set on beginning - the cluster would not be created and psql not started, so:
+    # sudo locale-gen uk_UA.UTF-8 uk_UA uk_UA.UTF-8
+    # sudo dpkg-reconfigure locales
+    # sudo pg_createcluster 9.3 main --start
+    # sudo service postgresql start
 
     # change deploy folder owners
     sudo chown vagrant:www-data -R /vagrant/

@@ -1,0 +1,8 @@
+  <form (ngSubmit)="register(p.value, e.value)" registrForm="ngForm">
+  	<div><p>email</p><input name="login" required type="text" #e></div>
+  	<div><p>password</p><input name="password" #p type="password"/></div>
+  	<div><button type="submit" [disabled]="registerForm.invalid">Register</button></div>
+  </form>
+
+connect to database in terminal:
+	psql -d matcha
