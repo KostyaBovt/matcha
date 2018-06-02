@@ -20,7 +20,7 @@ export class RegisterComponent implements OnInit {
   }
 
   register() {
-  	this.userService.register(this.email, this.password).subscribe(response => {
+    this.userService.register(this.email, this.password).subscribe(response => {
       if (response['success'] == 1) {
         this.email = "";
         this.password = "";
