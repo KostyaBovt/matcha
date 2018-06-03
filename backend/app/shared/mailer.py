@@ -29,3 +29,17 @@ class Mailer(object):
         Your Matcha!
       """.format(recipient_name, confirm_link)
       self.send_email(subject, sender, recipient_email, body)
+
+  def send_reset_password(self, recipient_name, recipient_email, email_hash, reset_hash):
+      subject = 'Matcha - Reset password'
+      sender = 'matcha.application.unit@gmail.com'
+      reset_link = "http://localhost:4200/reset/{:s}/{:s}".format(email_hash, reset_hash)
+      body = """
+        Hello, {:s}!
+        You just applied to reset your password on Matcha!
+        To finish do this, please follow this link:
+        {:s}
+        
+        Your Matcha!
+      """.format(recipient_name, reset_link)
+      self.send_email(subject, sender, recipient_email, body)

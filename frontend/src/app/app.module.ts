@@ -23,6 +23,7 @@ import { PageNotFoundComponent } from './components/pages/pagenotfound/pagenotfo
 import { RegisterComponent } from './components/pages/register/register.component';
 import { ForgotComponent } from './components/pages/forgot/forgot.component';
 import { ResetComponent } from './components/pages/reset/reset.component';
+import { ConfirmComponent } from './components/pages/confirm/confirm.component';
 
 
 
@@ -42,7 +43,8 @@ import { ResetComponent } from './components/pages/reset/reset.component';
     NotificationsComponent,
     RegisterComponent,
     ForgotComponent,
-    ResetComponent
+    ResetComponent,
+    ConfirmComponent
   ],
   imports: [
     BrowserModule,

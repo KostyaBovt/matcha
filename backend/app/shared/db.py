@@ -26,8 +26,8 @@ class database(object):
 		cur.execute(request)
 		conn.commit()
 
-		forRowCount = ['select', 'update', 'insert']
 		forLastRowId = ['insert']
+		forRowCount = ['select', 'update', 'insert']
 		forFetch = ['select']
 
 		if (self._command in forFetch):
@@ -37,7 +37,7 @@ class database(object):
 			self._rowCount = cur.rowcount
 
 		if (self._command in forLastRowId):
-			self._lastRowId = cur.lastrowid
+			self._lastRowId = cur.fetchone()['id']
 
 		cur.close()
 		conn.close()

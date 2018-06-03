@@ -1,3 +1,20 @@
-<p>
-  forgot works!
-</p>
+<div class="row">
+	<button routerLink="/login" type="button" class="btn btn-info">Back to Login</button>
+</div>
+<div class="row">
+	<div class="col-sm-4"></div>
+	<div class="col-sm-4">
+		<h2>FORGOT PASSWORD?</h2>
+		<h6>Leave your email and we send you link to reset password</h6>
+		<form (ngSubmit)="sendForgot()" #forgotForm="ngForm">
+			<div class="row">
+				<div class="col-sm-6">Email</div>
+				<div class="col-sm-6"><input name="email" type="text" [(ngModel)]="email"></div>
+			</div>
+			<div><button type="submit" class="btn">Send</button></div>
+		</form>
+		<h3>{{ sended }}</h3>
+	</div>
+	<div class="col-sm-4"></div>
+</div>
+

@@ -18,5 +18,27 @@ export class UserService {
 	return this.http.post('http://127.0.0.1:8480/register', {'email': email, 'password': password});
   }
 
+  confirm(email_hash: string, confirm_hash: string) {
+
+	const httpOptions = {
+	  headers: new HttpHeaders({
+	    'Content-Type':  'application/json'
+	  })
+	};
+
+	return this.http.get('http://127.0.0.1:8480/confirm/' + email_hash + '/' + confirm_hash);
+  }
+
+  sendForgot(email: string) {
+
+	const httpOptions = {
+	  headers: new HttpHeaders({
+	    'Content-Type':  'application/json'
+	  })
+	};
+
+	return this.http.post('http://127.0.0.1:8480/forgot', {'email': email});
+  }
+
 }
 

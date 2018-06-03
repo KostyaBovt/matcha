@@ -9,13 +9,14 @@ import { ProfileComponent } from './components/pages/profile/profile.component';
 import { MessagesComponent } from './components/pages/messages/messages.component';
 import { ConnectionsComponent } from './components/pages/connections/connections.component';
 import { NotificationsComponent } from './components/pages/notifications/notifications.component';
-import {MainComponent} from './components/layout/layout/main.component';
-import {BlankComponent} from './components/layout/layout/blank.component';
-import {LoginComponent} from './components/pages/login/login.component';
-import {PageNotFoundComponent} from './components/pages/pagenotfound/pagenotfound.component';
+import { MainComponent } from './components/layout/layout/main.component';
+import { BlankComponent } from './components/layout/layout/blank.component';
+import { LoginComponent } from './components/pages/login/login.component';
+import { PageNotFoundComponent } from './components/pages/pagenotfound/pagenotfound.component';
 import { RegisterComponent } from './components/pages/register/register.component';
 import { ForgotComponent } from './components/pages/forgot/forgot.component';
 import { ResetComponent } from './components/pages/reset/reset.component';
+import { ConfirmComponent } from './components/pages/confirm/confirm.component';
 
 
 export const blankLayoutRoutes: Routes = [
@@ -28,13 +29,17 @@ export const blankLayoutRoutes: Routes = [
         component: ForgotComponent
     },
     {
-        path: 'reset',
+        path: 'reset/:email_hash/:reset_hash',
         component: ResetComponent
     },
     {
         path: 'register',
         component: RegisterComponent
     },
+    {
+        path: 'confirm/:email_hash/:confirm_hash',
+        component: ConfirmComponent
+    }
 ];
 
 export const mainLayoutRoutes: Routes = [
