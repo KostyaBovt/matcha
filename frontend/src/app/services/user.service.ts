@@ -40,5 +40,16 @@ export class UserService {
 	return this.http.post('http://127.0.0.1:8480/forgot', {'email': email});
   }
 
+  checkReset(email_hash: string, reset_hash: string) {
+
+	const httpOptions = {
+	  headers: new HttpHeaders({
+	    'Content-Type':  'application/json'
+	  })
+	};
+
+	return this.http.get('http://127.0.0.1:8480/check_reset/' + email_hash + '/' + reset_hash);
+  }
+
 }
 

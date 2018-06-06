@@ -26,4 +26,5 @@ export class ForgotComponent implements OnInit {
         this.sended = 'Something went wrong...Check the email.';
       }
     });
+  }
 }

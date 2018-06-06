@@ -102,3 +102,18 @@ def forgot():
             mailer.send_reset_password(email, email, email_hash, reset_hash)
 
     return jsonify({'success': success, 'method': 'forgot'})
+
+
+@app.route("/check_reset/<string:email_hash>/<string:reset_hash>")
+def check_reset(email_hash, reset_hash):
+
+    db = shared.database()
+    success = 0
+
+    sql = "select * from forgot where email_hash='{:s}' and reset_hash='{:s}';".format(email_hash, reset_hash)
+    db.request(sql)
+
+    if db.getRowCount():
+        success = 1
+
+    return jsonify({'success': success, 'method': 'check_reset'})
