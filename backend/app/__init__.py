@@ -117,3 +117,33 @@ def check_reset(email_hash, reset_hash):
         success = 1
 
     return jsonify({'success': success, 'method': 'check_reset'})
+
+@app.route("/reset", methods=['POST'])
+def reset():
+    success = 0
+    hasher = Hasher()
+
+    email_hash = request.json['email_hash']
+    reset_hash = request.json['reset_hash']
+    password = request.json['password']
+    password = hasher.hash_string(password)
+    repeat_password = request.json['repeat_password']
+    repeat_password = hasher.hash_string(repeat_password)
+
+    if password != repeat_password:
+        return jsonify({'success': 0, 'method': 'reset'})
+
+    db = shared.database()
+    sql = "select * from forgot where email_hash='{:s}' and reset_hash= '{:s}';".format(email_hash, reset_hash)
+    db.request(sql)
+    if not db.getRowCount():
+        return jsonify({'success': 0, 'method': 'reset'})
+
+    user_id = db.getResult()[0]['user_id']
+    sql = "update users set password='{:s}' where id={:d}".format(password, user_id)
+    db.request(sql)
+
+    if not db.getError() and db.getRowCount() == 1:
+        success = 1
+        
+    return jsonify({'success': success, 'method': 'reset'})

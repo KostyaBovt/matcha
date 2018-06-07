@@ -10,6 +10,8 @@ import { UserService } from '../../../services/user.service';
 export class ResetComponent implements OnInit {
   email_hash: string;
   reset_hash: string;
+  password: string;
+  repeat_password: string;
   is_allowed: boolean = false;
   message: string = "";
 
@@ -26,8 +28,19 @@ export class ResetComponent implements OnInit {
   		} else {
   			this.message = 'Something went wrong. Please check you email for reset link.';
   		}
-  	})  	
+  	})
+  }
 
+  reset() {
+    this.userService.reset(this.email_hash, this.reset_hash, this.password, this.repeat_password).subscribe(response => {
+      if (response['success'] == 1) {
+        this.password = "";
+        this.repeat_password = "";
+        this.message = 'Your password was updated';
+      } else {
+        this.message = 'Failed! try again';
+      }
+    });
   }
 
 }

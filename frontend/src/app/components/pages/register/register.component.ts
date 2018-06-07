@@ -28,7 +28,6 @@ export class RegisterComponent implements OnInit {
       } else {
         this.registered = 'Failed! try again';
       }
-      console.log(response);
     });
   }
 
