@@ -24,6 +24,11 @@ import { RegisterComponent } from './components/pages/register/register.componen
 import { ForgotComponent } from './components/pages/forgot/forgot.component';
 import { ResetComponent } from './components/pages/reset/reset.component';
 import { ConfirmComponent } from './components/pages/confirm/confirm.component';
+import { LogoutComponent } from './components/pages/logout/logout.component';
+import { ViewComponent } from './components/pages/profile/view/view.component';
+import { ModifyComponent } from './components/pages/profile/modify/modify.component';
+import { LocationComponent } from './components/pages/profile/location/location.component';
+import { PhotosComponent } from './components/pages/profile/photos/photos.component';
 
 
 
@@ -44,7 +49,12 @@ import { ConfirmComponent } from './components/pages/confirm/confirm.component';
     RegisterComponent,
     ForgotComponent,
     ResetComponent,
-    ConfirmComponent
+    ConfirmComponent,
+    LogoutComponent,
+    ViewComponent,
+    ModifyComponent,
+    LocationComponent,
+    PhotosComponent
   ],
   imports: [
     BrowserModule,

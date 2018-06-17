@@ -1,3 +1,15 @@
-<p>
-  profile works!
-</p>
+
+<div class="row">
+  <div class="col-sm-2 sidebar">
+		<div class="my-profilebar">
+			<button routerLink="/profile/view" type="button" class="btn btn-info btn-sm btn-block">View</button>
+			<button routerLink="/profile/modify" type="button" class="btn btn-info btn-sm btn-block">Modify</button>
+			<button routerLink="/profile/location" type="button" class="btn btn-info btn-sm btn-block">Location</button>
+			<button routerLink="/profile/photos" type="button" class="btn btn-info btn-sm btn-block">Photos</button>
+		</div>
+  </div>
+  <div class="col-sm-10 main">
+  	<!-- place for container -->
+  	<router-outlet></router-outlet>
+  </div>
+</div>

@@ -4,6 +4,8 @@ import { HttpHeaders } from '@angular/common/http';
 
 @Injectable()
 export class UserService {
+  isLoggedIn: boolean = false;
+  redirectUrl: string = '';
 
   constructor(private http: HttpClient) { }
 
@@ -63,7 +65,33 @@ export class UserService {
 	return this.http.post('http://127.0.0.1:8480/reset', post_vars);
   }
 
+  login(email: string, password: string) {
 
+	const httpOptions = {
+	  headers: new HttpHeaders({
+	    'Content-Type':  'application/json'
+	  })
+	};
+
+	let post_vars = {'email': email, 'password': password};
+	return this.http.post('http://127.0.0.1:8480/login', post_vars);
+  }
+
+  auth(token: string) {
+
+	const httpOptions = {
+	  headers: new HttpHeaders({
+	    'Content-Type':  'application/json'
+	  })
+	};
+
+	let post_vars = {'token': token};
+	return this.http.post('http://127.0.0.1:8480/auth', post_vars);
+  }
+
+  checkLoggedIn() {
+  	return this.isLoggedIn;
+  }
 
 }
 

@@ -147,3 +147,53 @@ def reset():
         success = 1
         
     return jsonify({'success': success, 'method': 'reset'})
+
+@app.route("/login", methods=['POST'])
+def login():
+    success = 0
+    hasher = Hasher()
+
+    email = request.json['email']
+    password = request.json['password']
+    password = hasher.hash_string(password)
+
+    db = shared.database()
+    sql = "select * from users where email='{:s}' and password='{:s}' and confirmed=1".format(email, password)
+    db.request(sql)
+    if not db.getRowCount():
+        return jsonify({'success': 0, 'method': 'login'})
+
+    user_id = db.getResult()[0]['id']
+    sql = "select * from login where user_id={:d}".format(user_id)
+    db.request(sql)
+
+    if not db.getRowCount():
+        # insert new token
+        token = hasher.generate_hash(52)
+        sql = "insert into login (user_id, token) values ({:d}, '{:s}') returning id".format(user_id, token)
+        db.request(sql)
+    else:
+        # update last_seen
+        token = db.getResult()[0]['token']
+        sql = "update login set last_seen=DEFAULT;"
+        db.request(sql)
+
+    if not db.getError() and db.getRowCount() == 1:
+        success = 1
+        
+    return jsonify({'success': success, 'method': 'login', 'token': token})
+
+
+@app.route("/auth", methods=['POST'])
+def auth():
+    success = 0
+
+    token = request.json['token']
+
+    db = shared.database()
+    sql = "select * from login where token='{:s}';".format(token)
+    db.request(sql)
+    if db.getRowCount():
+        success = 1 
+
+    return jsonify({'success': success, 'method': 'auth'})
