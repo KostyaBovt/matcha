@@ -28,7 +28,7 @@ export class ConfirmComponent implements OnInit {
   		} else {
   			this.message = 'Something went wrong. Please check you email for confirmation link.';
   		}
-  	})
+  	});
   }
 
 }

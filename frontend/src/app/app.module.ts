@@ -5,6 +5,8 @@ import { FormsModule }   from '@angular/forms';
 
 import {AuthGuard} from './services/auth-guard.service';
 import {UserService} from './services/user.service';
+import {ProfileService} from './services/profile.service';
+import {ApiService} from './services/api.service';
 
 
 import { AppComponent } from "./components/layout/app/app.component";
@@ -62,7 +64,7 @@ import { PhotosComponent } from './components/pages/profile/photos/photos.compon
     HttpClientModule,
     FormsModule
   ],
-  providers: [AuthGuard, UserService],
+  providers: [AuthGuard, UserService, ProfileService, ApiService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

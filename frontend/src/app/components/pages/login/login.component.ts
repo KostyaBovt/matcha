@@ -15,7 +15,6 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     let redir = this.userService.redirectUrl;
-    console.log(redir);
 
     if (this.userService.checkLoggedIn()) {
       if (redir) {

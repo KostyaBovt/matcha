@@ -131,3 +131,10 @@ ALTER TABLE ONLY login ALTER COLUMN id SET DEFAULT nextval('login_id_seq'::regcl
 
 ALTER TABLE ONLY login
     ADD CONSTRAINT  login_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+
+
+-- DATA INSERT
+insert into users_info (user_id, username, fname, sname, gender, sex_preference, phone, bio) values (48, 'Dobro', 'Kostia', 'Bovt', 1, 2, '+380997741343', 'Hello we can meet in the park and walk a dog');

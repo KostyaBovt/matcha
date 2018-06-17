@@ -197,3 +197,51 @@ def auth():
         success = 1 
 
     return jsonify({'success': success, 'method': 'auth'})
+
+def auth_user(token):
+    success = 0
+    user_id = None
+
+    db = shared.database()
+    sql = "select * from login where token='{:s}';".format(token)
+    db.request(sql)
+    if db.getRowCount():
+        success = 1
+        user_id = db.getResult()[0]['user_id']
+
+    return {'success': success, 'user_id': user_id}
+
+
+
+@app.route("/profile/get", methods=['POST'])
+def profile_get():
+    success = 0
+    result = []
+
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    user_id = auth_result['user_id']
+    db = shared.database()
+    sql = """
+        select users.*, users_info.*
+        from users
+        inner join users_info
+        on users.id = users_info.user_id
+        where users.id='{:d}'
+    """.format(user_id)
+
+    db.request(sql)
+    if db.getRowCount():
+        success = 1
+        result = db.getResult()[0]
+    else:
+        success = 0
+
+    return jsonify({'success': success, 'result': result})
+
+
+
