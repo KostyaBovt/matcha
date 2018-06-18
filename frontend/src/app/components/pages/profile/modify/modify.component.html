@@ -3,12 +3,24 @@
 <div>
 	<form (ngSubmit)="login()" #loginForm="ngForm">
 		<div class="row">
-			<div class="col-sm-3">Email</div>
-			<div class="col-sm-4"><input name="email" type="text" [(ngModel)]="email"></div>
+			<div class="col-sm-3">Username</div>
+			<div class="col-sm-4"><input class="form-control" name="username" type="text" [(ngModel)]="username"></div>
 		</div>
 		<div class="row">
-			<div class="col-sm-3">Password</div>
-			<div class="col-sm-4"><input name="password" type="password" [(ngModel)]="password"></div>
+			<div class="col-sm-3">First name</div>
+			<div class="col-sm-4"><input class="form-control" name="fname" type="text" [(ngModel)]="fname"></div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3">Second Name</div>
+			<div class="col-sm-4"><input class="form-control" name="sname" type="text" [(ngModel)]="sname"></div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3">Gender</div>
+			<div class="col-sm-4">
+				<select class="form-control">
+					<option *ngFor="let gender of genders" [value]="gender">{{gender}}</option>
+				</select>
+			</div>
 		</div>
 		<div>
 			<button type="submit" class="btn">Update</button>

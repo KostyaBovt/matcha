@@ -30,6 +30,7 @@ CREATE TABLE users_info (
     username character varying(128),
     fname character varying(128),
     sname character varying(128),
+    birth date,
     gender integer,
     sex_preference integer,
     phone  character varying(128),
@@ -137,4 +138,4 @@ ALTER TABLE ONLY login
 
 
 -- DATA INSERT
-insert into users_info (user_id, username, fname, sname, gender, sex_preference, phone, bio) values (48, 'Dobro', 'Kostia', 'Bovt', 1, 2, '+380997741343', 'Hello we can meet in the park and walk a dog');
+insert into users_info (user_id, username, fname, sname, birth, gender, sex_preference, phone, bio) values (48, 'Dobro', 'Kostia', 'Bovt', '1990-12-16', 1, 2, '+380997741343', 'Hello we can meet in the park and walk a dog');
