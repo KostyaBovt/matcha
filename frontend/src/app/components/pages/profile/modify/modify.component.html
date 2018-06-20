@@ -1,7 +1,7 @@
 
-<div><h2>Update your info</h2></div>
 <div>
-	<form (ngSubmit)="login()" #loginForm="ngForm">
+	<form (ngSubmit)="updateInfo()" #updateInfoForm="ngForm">
+		<div><h4>Update personal information</h4></div>
 		<div class="row">
 			<div class="col-sm-3">Username</div>
 			<div class="col-sm-4"><input class="form-control" name="username" type="text" [(ngModel)]="username"></div>
@@ -17,14 +17,75 @@
 		<div class="row">
 			<div class="col-sm-3">Gender</div>
 			<div class="col-sm-4">
-				<select class="form-control">
-					<option *ngFor="let gender of genders" [value]="gender">{{gender}}</option>
+				<select class="form-control" [(ngModel)]="gender" name="gender">
+					<option *ngFor="let gender_list_item of gender_list" [value]="gender_list_item.value">{{gender_list_item.name}}</option>
 				</select>
 			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3">Sex preference</div>
+			<div class="col-sm-4">
+				<select class="form-control" [(ngModel)]="sex_preference" name="sex_preference">
+					<option *ngFor="let prefer_list_item of prefer_list" [value]="prefer_list_item.value">{{prefer_list_item.name}}</option>
+				</select>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3">Birth Day</div>
+			<div class="col-sm-4">
+				<input name="releaseDate" type="date" class="form-control" [(ngModel)]="birth" name="Birth">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3">Phone</div>
+			<div class="col-sm-4"><input class="form-control" name="phone" type="text" [(ngModel)]="phone"></div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3">Bio</div>
+			<div class="col-sm-4"><textarea class="form-control" name="bio" type="text" [(ngModel)]="bio"></textarea></div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3">Interests</div>
+			<div class="col-sm-4"><textarea class="form-control" name="interests" type="text" [(ngModel)]="interests"></textarea></div>
+		</div>
+		<div>
+			<button type="submit" class="btn">Update</button>
+		</div>
+	</form>	
+
+		<hr/>
+
+	<form (ngSubmit)="updateEmail()" #updateEmailForm="ngForm">
+		<div><h4>Update email</h4></div>
+		<div class="row">
+			<div class="col-sm-3">Email</div>
+			<div class="col-sm-4"><input class="form-control" name="email" type="text" [(ngModel)]="email"></div>
+		</div>
+		<div>
+			<button type="submit" class="btn">Update</button>
+		</div>
+	</form>	
+
+		<hr/>
+
+	<form (ngSubmit)="updatePassword()" #updatePasswordForm="ngForm">
+		<div><h4>Update password</h4></div>
+		<div class="row">
+			<div class="col-sm-3">Old password</div>
+			<div class="col-sm-4"><input class="form-control" name="password" type="password"></div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3">New Password</div>
+			<div class="col-sm-4"><input class="form-control" name="new_password" type="password"></div>
+		</div>
+		<div class="row">
+			<div class="col-sm-3">Repeate New Password</div>
+			<div class="col-sm-4"><input class="form-control" name="repeate_password" type="password"></div>
 		</div>
 		<div>
 			<button type="submit" class="btn">Update</button>
 		</div>
 	</form>
+
 </div>
 <h3>{{ message }}</h3>

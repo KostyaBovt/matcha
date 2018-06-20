@@ -7,11 +7,6 @@ from shared import vdf
 app = Flask(__name__)
 app.config.from_pyfile('../config/app_config.py')
 
-@app.route("/")
-def hello():
-    return jsonify({'success': 'true'})
-    # return "<h1 style=''>Hello There! I am Flask Application</h1>"
-
 @app.route("/mail")
 def test_mail():
     mailer = Mailer()
@@ -175,7 +170,7 @@ def login():
     else:
         # update last_seen
         token = db.getResult()[0]['token']
-        sql = "update login set last_seen=DEFAULT;"
+        sql = "update login set last_seen=DEFAULT where token='{:s}';".format(token)
         db.request(sql)
 
     if not db.getError() and db.getRowCount() == 1:
@@ -226,6 +221,8 @@ def profile_get():
 
     user_id = auth_result['user_id']
     db = shared.database()
+    
+    # get user_info
     sql = """
         select users.*, users_info.*
         from users
@@ -236,12 +233,33 @@ def profile_get():
 
     db.request(sql)
     if db.getRowCount():
-        success = 1
         result = db.getResult()[0]
     else:
         success = 0
+        return jsonify({'success': success, 'result': None})
+
+    # get user_info
+    sql = """
+        select *
+        from users_interests
+        inner join interests
+        on users_interests.interest_id = interests.id
+        where users_interests.user_id='{:d}'
+    """.format(user_id)
+    vdf(sql)
+
+    db.request(sql)
+    if not db.getError():
+        success = 1
+        result_interests = db.getResult()
+        interests_string = ""
+        for interest_row in result_interests:
+            separator = "" if not interests_string else ", "
+            interests_string = interests_string + separator +  interest_row['interest']
+        result['interests'] = interests_string    
+    else:
+        success = 0
+        return jsonify({'success': success, 'result': None})
 
     return jsonify({'success': success, 'result': result})
-
-
 

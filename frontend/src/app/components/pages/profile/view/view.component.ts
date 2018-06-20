@@ -15,6 +15,7 @@ export class ViewComponent implements OnInit {
 	email: string = '';
 	phone: string = '';
 	bio: string = '';
+	interests: string = '';
 	age: number;
 
   constructor(private profileService: ProfileService) { }
@@ -79,6 +80,7 @@ export class ViewComponent implements OnInit {
 			this.email = result['email'];
 			this.phone = result['phone'];
 			this.bio = result['bio'];
+			this.interests = result['interests'];
 			if (result['birth']) {
 				this.age = this.calucateAge(result['birth'])
 			}
