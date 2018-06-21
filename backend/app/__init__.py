@@ -191,6 +191,9 @@ def auth():
     if db.getRowCount():
         success = 1 
 
+    sql = "update login set last_seen=DEFAULT where token='{:s}';".format(token)
+    db.request(sql)
+
     return jsonify({'success': success, 'method': 'auth'})
 
 def auth_user(token):
@@ -203,9 +206,31 @@ def auth_user(token):
     if db.getRowCount():
         success = 1
         user_id = db.getResult()[0]['user_id']
+        sql = "update login set last_seen=DEFAULT where token='{:s}';".format(token)
+        db.request(sql)
 
     return {'success': success, 'user_id': user_id}
 
+def calulate_raiting(user_id):
+    db = shared.database()
+    sql = "select * likes where user_id_2='{:d} and action=1';".format(user_id)
+    db.request(sql)
+    likes = len(db.getResult())
+
+    sql = "select * likes where user_id_2='{:d} and action=2';".format(user_id)
+    db.request(sql)
+    dislikes = len(db.getResult())
+
+    base_rating = 0.5
+    if not likes and not dislikes:
+        additive_rating = 0
+    elif not likes and dislikes > 0:
+        additive_ratnig = 0
+    else:
+        additive_ratnig = 0.5 * likes / (likes + dislikes)
+
+    rating = round(base_rating + additive_ratnig, 4)
+    return rating
 
 
 @app.route("/profile/get", methods=['POST'])
@@ -234,11 +259,12 @@ def profile_get():
     db.request(sql)
     if db.getRowCount():
         result = db.getResult()[0]
+        result['rating'] = str(result['rating'])
     else:
         success = 0
         return jsonify({'success': success, 'result': None})
 
-    # get user_info
+    # get user interests
     sql = """
         select *
         from users_interests
@@ -246,7 +272,6 @@ def profile_get():
         on users_interests.interest_id = interests.id
         where users_interests.user_id='{:d}'
     """.format(user_id)
-    vdf(sql)
 
     db.request(sql)
     if not db.getError():

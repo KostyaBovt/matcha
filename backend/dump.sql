@@ -37,8 +37,9 @@ CREATE TABLE users_info (
     bio text,
     geo boolean DEFAULT false NOT NULL,
     geo_type integer DEFAULT 1 NOT NULL,
-    geo_lat numeric(5,5),
-    geo_lng numeric(5,5)
+    geo_lat numeric(10,5),
+    geo_lng numeric(10,5),
+    rating numeric(5,4) DEFAULT 0.5 NOT NULL
 );
 
 ALTER TABLE ONLY users_info
