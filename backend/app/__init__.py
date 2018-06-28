@@ -288,3 +288,97 @@ def profile_get():
 
     return jsonify({'success': success, 'result': result})
 
+@app.route("/profile/update", methods=['POST'])
+def profile_update():
+    success = 0
+    result = []
+
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    user_id = auth_result['user_id']
+    db = shared.database()
+
+    username = request.json['username']
+    fname = request.json['fname']
+    sname = request.json['sname']
+    gender = request.json['gender']
+    sex_preference = request.json['sex_preference']
+    birth = request.json['birth']
+    phone = request.json['phone']
+    bio = request.json['bio']
+
+
+    # update user info
+    sql = """
+        update users_info
+        set 
+        username='{:s}', 
+        fname='{:s}', 
+        sname='{:s}', 
+        gender='{:d}', 
+        sex_preference='{:d}', 
+        birth='{:s}', 
+        phone='{:s}', 
+        bio='{:s}' 
+        where user_id={:d}
+    """.format(username, fname, sname, gender, sex_preference, birth, phone, bio, user_id)
+    db.request(sql)
+
+    # updated interests
+    interests = request.json['interests']
+    split_interests = [x.strip('\'\" ') for x in interests.split(',')]
+    split_interests = [x for x in split_interests if x]
+
+
+    # update general interest table
+    if split_interests:
+        sql = "select * from intests where "
+        add_or = ""
+        for interest in split_interests:
+            sql = sql + """
+                {:s} interest='{:s}'
+            """.format(add_or, interest)
+            if not add_or:
+                add_or = "OR"
+        db.request(sql)
+
+        exist_interests = [x['interest'] for x in db.getResult()]
+        to_add_interests = [item for item in split_interests if item not in exist_interests]
+
+    # if some new interests detected - add to general table
+    if to_add_interests:
+        sql = """
+            insert into interests (interest)
+            values 
+        """
+        for to_add in to_add_interests:
+            sql = sql + "('" + to_add + "') "
+        db.request(sql, return_id_flag=False)
+
+    # now chack if we need to add or delete interests for current user
+    # tricky approach - we will delete all interests and add new list :)
+    sql = """
+        select * from users_interests
+        inner join interests on interests.id = users_interests.interest_id
+        where users_interests.user_id={:d}
+    """.format(user_id)
+
+    #here to update users interests...
+
+
+    # get current interests
+    sql = """
+        select * from  
+        where user_id={:d}
+    """.format(username, fname, sname, gender, sex_preference, birth, phone, bio, user_id)
+    db.request(sql)
+
+    if not db.getError():
+        success = 1
+
+    return jsonify({'success': success, 'method': 'profile/update'})
+

@@ -33,7 +33,7 @@
 		<div class="row">
 			<div class="col-sm-3">Birth Day</div>
 			<div class="col-sm-4">
-				<input name="releaseDate" type="date" class="form-control" [(ngModel)]="birth" name="Birth">
+				<input class="form-control" type="date" [ngModel]="birth | date:'yyyy-MM-dd'" (ngModelChange)="birth = $event" name="birth">
 			</div>
 		</div>
 		<div class="row">
@@ -50,6 +50,8 @@
 		</div>
 		<div>
 			<button type="submit" class="btn">Update</button>
+			<div *ngIf="infoUpdated == 1">info was updated</div>
+			<div *ngIf="infoUpdated == 2">error while updated</div>
 		</div>
 	</form>	
 

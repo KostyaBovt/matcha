@@ -13,7 +13,7 @@ class database(object):
 	def __init__(self):
 		pass
 
-	def request(self, request):
+	def request(self, request, return_id_flag=True):
 		self._result = None
 		self._error = False
 		self._rowCount = 0
@@ -36,7 +36,7 @@ class database(object):
 		if (self._command in forRowCount):
 			self._rowCount = cur.rowcount
 
-		if (self._command in forLastRowId):
+		if (self._command in forLastRowId and return_id_flag):
 			self._lastRowId = cur.fetchone()['id']
 
 		cur.close()

@@ -25,16 +25,16 @@ export class ViewComponent implements OnInit {
 	let gender = '';
 	switch (code) {
 	  case 1:
-	    gender = 'Male';
-	    break;
+		 gender = 'Male';
+		 break;
 	  case 2:
-	    gender = 'Female';
-	    break;
+		 gender = 'Female';
+		 break;
 	  case 3:
-	    gender = 'Other';
-	    break;
+		 gender = 'Other';
+		 break;
 	  default:
-	    gender = 'Not specified';
+		 gender = 'Not specified';
 	}
 	return gender;
   }
@@ -43,36 +43,36 @@ export class ViewComponent implements OnInit {
 	let sex_preference = '';
 	switch (code) {
 	  case 1:
-	    sex_preference = 'Male';
-	    break;
+		 sex_preference = 'Male';
+		 break;
 	  case 2:
-	    sex_preference = 'Female';
-	    break;
+		 sex_preference = 'Female';
+		 break;
 	  case 3:
-	    sex_preference = 'Both';
-	    break;
+		 sex_preference = 'Both';
+		 break;
 	  default:
-	    sex_preference = 'Not specified';
+		 sex_preference = 'Not specified';
 	}
 	return sex_preference;
   }
 
   private calucateAge(dateString) {
 	var today = new Date();
-	    var birthDate = new Date(dateString);
-	    var age = today.getFullYear() - birthDate.getFullYear();
-	    var m = today.getMonth() - birthDate.getMonth();
-	    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-	        age--;
-	    }
-	    return age;
+		 var birthDate = new Date(dateString);
+		 var age = today.getFullYear() - birthDate.getFullYear();
+		 var m = today.getMonth() - birthDate.getMonth();
+		 if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+			  age--;
+		 }
+		 return age;
   }
 
   ngOnInit() {
-  	this.profileService.get().subscribe(response => {
-  		if (response['success'] == 1) {
-  			let result = response['result'];
-  			console.log(result);
+	this.profileService.get().subscribe(response => {
+		if (response['success'] == 1) {
+			let result = response['result'];
+			console.log(result);
 			this.username = result['username'];
 			this.fname = result['fname'];
 			this.sname = result['sname'];
@@ -86,8 +86,8 @@ export class ViewComponent implements OnInit {
 			if (result['birth']) {
 				this.age = this.calucateAge(result['birth'])
 			}
-  		}
-  	});
+		}
+	});
   }
 
 }
