@@ -43,3 +43,17 @@ class Mailer(object):
         Your Matcha!
       """.format(recipient_name, reset_link)
       self.send_email(subject, sender, recipient_email, body)
+
+  def send_email_update_confirm(self, recipient_name, recipient_email, email_hash, confirm_hash):
+      subject = 'Matcha - Confirm email update'
+      sender = 'matcha.application.unit@gmail.com'
+      confirm_link = "http://localhost:4200/email_confirm/{:s}/{:s}".format(email_hash, confirm_hash)
+      body = """
+        Hello, {:s}!
+        You applied to update email on Matcha application!
+        To finish updating, please follow this link:
+        {:s}
+        
+        Your Matcha!
+      """.format(recipient_name, confirm_link)
+      self.send_email(subject, sender, recipient_email, body)

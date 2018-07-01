@@ -293,24 +293,28 @@ def profile_update():
     success = 0
     result = []
 
+    # authorize
     token = request.json['token']
     auth_result = auth_user(token)
 
+    # if not authorized - return immediately
     if not auth_result['success']:
         return jsonify({'success': success})
 
+    # authorized user id
     user_id = auth_result['user_id']
-    db = shared.database()
 
     username = request.json['username']
     fname = request.json['fname']
     sname = request.json['sname']
-    gender = request.json['gender']
-    sex_preference = request.json['sex_preference']
+    gender = int(request.json['gender'])
+    sex_preference = int(request.json['sex_preference'])
     birth = request.json['birth']
     phone = request.json['phone']
     bio = request.json['bio']
 
+    # get db
+    db = shared.database()
 
     # update user info
     sql = """
@@ -328,15 +332,16 @@ def profile_update():
     """.format(username, fname, sname, gender, sex_preference, birth, phone, bio, user_id)
     db.request(sql)
 
-    # updated interests
+    # interests per request
     interests = request.json['interests']
     split_interests = [x.strip('\'\" ') for x in interests.split(',')]
     split_interests = [x for x in split_interests if x]
 
 
     # update general interest table
+    to_add_interests = []
     if split_interests:
-        sql = "select * from intests where "
+        sql = "select * from interests where "
         add_or = ""
         for interest in split_interests:
             sql = sql + """
@@ -355,30 +360,202 @@ def profile_update():
             insert into interests (interest)
             values 
         """
+        first = True
         for to_add in to_add_interests:
+            if not first:
+                sql = sql + ', '
             sql = sql + "('" + to_add + "') "
+            first = False
         db.request(sql, return_id_flag=False)
 
-    # now chack if we need to add or delete interests for current user
     # tricky approach - we will delete all interests and add new list :)
+    
+    # now deleting all interest of current user
     sql = """
-        select * from users_interests
-        inner join interests on interests.id = users_interests.interest_id
-        where users_interests.user_id={:d}
+        delete from users_interests where user_id={:d}
     """.format(user_id)
-
-    #here to update users interests...
-
-
-    # get current interests
-    sql = """
-        select * from  
-        where user_id={:d}
-    """.format(username, fname, sname, gender, sex_preference, birth, phone, bio, user_id)
     db.request(sql)
+
+    if split_interests:
+        # getting all ids of new interests
+        sql = "select * from interests where "
+        add_or = ""
+        for interest in split_interests:
+            sql = sql + """
+                {:s} interest='{:s}'
+            """.format(add_or, interest)
+            if not add_or:
+                add_or = "OR"        
+        db.request(sql)
+        exist_interests_ids = [x['id'] for x in db.getResult()]
+
+        # insert all new interest ids fo current user
+        sql = """
+            insert into users_interests (interest_id, user_id) values 
+        """
+        first = True
+        for interest_id in exist_interests_ids:
+            if not first:
+                sql = sql + ', '
+            sql = sql + "({:d}, {:d})".format(interest_id, user_id)
+            first = False
+        db.request(sql, return_id_flag=False)
 
     if not db.getError():
         success = 1
 
     return jsonify({'success': success, 'method': 'profile/update'})
 
+
+@app.route("/profile/update_password", methods=['POST'])
+def profile_update_password():
+    success = 0
+    result = []
+
+    # get db and hasher
+    db = shared.database()
+    hasher = Hasher()
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+    password = request.json['password']
+    new_password  = request.json['new_password']
+    repeate_password  = request.json['repeate_password']
+
+    # if repeate password != new password - return immediately
+    if new_password is not repeate_password:
+        return jsonify({'success': success})
+
+    # validate current password
+    sql = """
+        select * from users
+        where id={:d} and password='{:s}'
+    """.format(user_id, hasher.hash_string(password))
+    db.request(sql)
+
+    # return immediately if not validated
+    if not db.getRowCount():
+        return jsonify({'success': success})
+
+    # insert new password
+    sql = """
+        update users set password='{:s}' where id={:d}
+    """.format(hasher.hash_string(new_password), user_id)
+    db.request(sql)
+
+    if not db.getError():
+        success = 1
+
+    return jsonify({'success': success, 'method': 'profile/update_password'})
+
+@app.route("/profile/update_email", methods=['POST'])
+def profile_update_email():
+    success = 0
+    result = []
+
+    # get db
+    db = shared.database()
+    hasher = Hasher()
+    mailer = Mailer()
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+    new_email = request.json['new_email']
+    
+    #check if email already exist
+    sql = """
+        select * from users where email='{:s}'
+    """.format(new_email)
+    db.request(sql)
+
+    if db.getRowCount():
+        # if email already exist - return immediately
+        return jsonify({'success': success})
+
+    # if hash for email update confirm fro current user already exist - delete it
+    sql = """delete from email_update where user_id={:d}""".format(user_id)
+    db.request(sql)
+
+    # continue if no email found
+    email_hash = hasher.hash_string(new_email)
+    confirm_hash = hasher.generate_hash(32)
+    sql = """
+        insert into email_update (user_id, new_email, email_hash, confirm_hash) values
+        ({:d}, '{:s}', '{:s}', '{:s}') returning id
+    """.format(user_id, new_email, email_hash, confirm_hash)
+    db.request(sql)
+
+    mailer.send_email_update_confirm(new_email, new_email, email_hash, confirm_hash)
+
+    if not db.getError():
+        success = 1
+
+    return jsonify({'success': success, 'method': 'profile/update_email'})
+
+@app.route("/confirm_update_email", methods=['POST'])
+def confirm_update_email():
+
+    email_hash = request.json['email_hash']
+    confirm_hash = request.json['confirm_hash']
+
+    db = shared.database()
+    success = 0
+
+    sql = "select * from email_update where email_hash='{:s}' and confirm_hash='{:s}';".format(email_hash, confirm_hash)
+    db.request(sql)
+
+    if db.getRowCount():
+        user_id = db.getResult()[0]['user_id']
+        new_email = db.getResult()[0]['new_email']
+        sql = "update users set email='{:s}' where id={:d};".format(new_email, user_id)
+        db.request(sql)        
+
+        sql = "delete from email_update where user_id={:d}".format(user_id)
+        db.request(sql)        
+
+        if not db.getError():
+            success = 1
+
+    return jsonify({'success': success, 'method': 'confirm_update_email'})
+
+@app.route("/profile/upload_photo", methods=['POST'])
+def profile_upload_photo():
+    vdf(request.json, 'upload_photo_args')
+    success = 0
+    result = []
+
+    # get db
+    db = shared.database()
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+    # photo = request.json['photo']
+
+    return jsonify({'success': 1, 'method': 'profile/upload_photo'})

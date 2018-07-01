@@ -93,5 +93,20 @@ export class UserService {
   	return this.isLoggedIn;
   }
 
+  confirmUpdateEmail(email_hash: string, confirm_hash: string) {
+
+	const httpOptions = {
+	  headers: new HttpHeaders({
+	    'Content-Type':  'application/json'
+	  })
+	};
+
+    let post_vars = {
+      'email_hash': email_hash,
+      'confirm_hash': confirm_hash
+    }
+	return this.http.post('http://127.0.0.1:8480/confirm_update_email', post_vars);
+  }
+
 }
 

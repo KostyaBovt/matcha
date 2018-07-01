@@ -33,6 +33,13 @@ export class ModifyComponent implements OnInit {
 
   infoUpdated: number = 0;
 
+  password: string;
+  new_password: string;
+  repeate_password: string;
+
+  passwordUpdated: number = 0;
+  emailConfirmSent: number = 0;
+
   constructor(private profileService: ProfileService) { }
 
   private calucateAge(dateString) {
@@ -71,6 +78,26 @@ export class ModifyComponent implements OnInit {
             this.infoUpdated = 1;
         } else {
             this.infoUpdated = 2;
+        }
+    });
+  }
+
+  updatePassword() {
+    this.profileService.updatePassword(this.password, this.new_password, this.repeate_password).subscribe(response => {
+        if (response['success'] == 1) {
+            this.passwordUpdated = 1;
+        } else {
+            this.passwordUpdated = 2;
+        }
+    });
+  }
+
+  updateEmail() {
+    this.profileService.updateEmail(this.email).subscribe(response => {
+        if (response['success'] == 1) {
+            this.emailConfirmSent = 1;
+        } else {
+            this.emailConfirmSent = 2;
         }
     });
   }

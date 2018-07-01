@@ -1,3 +1,9 @@
-<p>
-  photos works!
-</p>
+<div>
+	<form (ngSubmit)="uploadPhoto()" #uploadPhotoForm="ngForm">
+		<input class="form-control" type="file" name="photo" id="avatar" (change)="onFileChange($event)" #fileInput>
+		<div>
+			<button type="submit" class="btn">Add Photo</button>
+			<div *ngIf="photoUploaded == 1">photo was uploaded</div>
+		</div>
+	</form>
+</div>

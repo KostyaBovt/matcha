@@ -51,7 +51,7 @@
 		<div>
 			<button type="submit" class="btn">Update</button>
 			<div *ngIf="infoUpdated == 1">info was updated</div>
-			<div *ngIf="infoUpdated == 2">error while updated</div>
+			<div *ngIf="infoUpdated == 2">error while updating</div>
 		</div>
 	</form>	
 
@@ -65,6 +65,8 @@
 		</div>
 		<div>
 			<button type="submit" class="btn">Update</button>
+			<div *ngIf="emailConfirmSent == 1">Check your new email to confirm email update</div>
+			<div *ngIf="emailConfirmSent == 2">error while updating</div>
 		</div>
 	</form>	
 
@@ -74,18 +76,20 @@
 		<div><h4>Update password</h4></div>
 		<div class="row">
 			<div class="col-sm-3">Old password</div>
-			<div class="col-sm-4"><input class="form-control" name="password" type="password"></div>
+			<div class="col-sm-4"><input class="form-control" name="password" type="password" [(ngModel)]="password"></div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">New Password</div>
-			<div class="col-sm-4"><input class="form-control" name="new_password" type="password"></div>
+			<div class="col-sm-4"><input class="form-control" name="new_password" type="password" [(ngModel)]="new_password"></div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">Repeate New Password</div>
-			<div class="col-sm-4"><input class="form-control" name="repeate_password" type="password"></div>
+			<div class="col-sm-4"><input class="form-control" name="repeate_password" type="password" [(ngModel)]="repeate_password"></div>
 		</div>
 		<div>
 			<button type="submit" class="btn">Update</button>
+			<div *ngIf="passwordUpdated == 1">password was updated</div>
+			<div *ngIf="passwordUpdated == 2">error while updating</div>
 		</div>
 	</form>
 

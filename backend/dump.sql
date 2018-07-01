@@ -194,6 +194,32 @@ ALTER TABLE ONLY likes
     ADD CONSTRAINT likes_user_id_2_fkey FOREIGN KEY (user_id_2) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
+-- create table for email update
+DROP TABLE IF EXISTS email_update;
+
+CREATE TABLE email_update (
+  id integer NOT NULL,
+  user_id integer NOT NULL,
+  new_email character varying(256) NOT NULL,
+  email_hash character varying(256) NOT NULL,
+  confirm_hash character varying(256) NOT NULL
+);
+
+ALTER TABLE ONLY email_update
+    ADD CONSTRAINT email_update_pk PRIMARY KEY (id);
+
+CREATE SEQUENCE email_update_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER TABLE ONLY email_update ALTER COLUMN id SET DEFAULT nextval('email_update_id_seq'::regclass);
+
+ALTER TABLE ONLY email_update
+    ADD CONSTRAINT email_update_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
 
 -- DATA INSERT
 insert into users (id, email, password, confirmed) values (48, 'kostya.bovt@gmail.com', 'c4ca4238a0b923820dcc509a6f75849b', 1);

@@ -22,6 +22,7 @@ import { ViewComponent } from './components/pages/profile/view/view.component';
 import { ModifyComponent } from './components/pages/profile/modify/modify.component';
 import { LocationComponent } from './components/pages/profile/location/location.component';
 import { PhotosComponent } from './components/pages/profile/photos/photos.component';
+import { EmailConfirmComponent } from './components/pages/email-confirm/email-confirm.component';
 
 
 export const blankLayoutRoutes: Routes = [
@@ -44,6 +45,10 @@ export const blankLayoutRoutes: Routes = [
     {
         path: 'confirm/:email_hash/:confirm_hash',
         component: ConfirmComponent
+    },
+    {
+        path: 'email_confirm/:email_hash/:confirm_hash',
+        component: EmailConfirmComponent
     }
 ];
 

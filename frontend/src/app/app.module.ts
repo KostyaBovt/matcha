@@ -31,7 +31,7 @@ import { ViewComponent } from './components/pages/profile/view/view.component';
 import { ModifyComponent } from './components/pages/profile/modify/modify.component';
 import { LocationComponent } from './components/pages/profile/location/location.component';
 import { PhotosComponent } from './components/pages/profile/photos/photos.component';
-
+import { EmailConfirmComponent } from './components/pages/email-confirm/email-confirm.component';
 
 
 @NgModule({
@@ -56,7 +56,8 @@ import { PhotosComponent } from './components/pages/profile/photos/photos.compon
     ViewComponent,
     ModifyComponent,
     LocationComponent,
-    PhotosComponent
+    PhotosComponent,
+    EmailConfirmComponent
   ],
   imports: [
     BrowserModule,
