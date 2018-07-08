@@ -1,13 +1,20 @@
+<h3 *ngIf="photos && photos.length">Your photos</h3>
+<h6 *ngIf="photos && photos.length">(max 5 photos)</h6>
+
+<h3 *ngIf="!photos || !photos.length">Please add your photos</h3>
+<h6 *ngIf="!photos || !photos.length">(max 5 photos)</h6>
+
 <div>
 	<div class="photo" *ngFor="let photo of photos">
 		<img class="fitdiv" src="data:image/jpeg;base64,{{photo.src}}">
 		<div class="bottom_buttons">
-			<button class="btn-info">Set avatar</button>	
-			<button class="btn-danger">Delete</button>	
+			<button type="button" *ngIf="!photo.avatar" class="btn btn-info" (click)="setAvatar(photo.hash)">Set avatar</button>	
+			<button type="button" *ngIf="photo.avatar" class="btn btn-warning disabled">Avatar</button>	
+			<button type="button" class="btn btn-danger" (click)="deletePhoto(photo.hash)" >Delete</button>	
 		</div>	
 	</div>
 	<hr>
-	<form (ngSubmit)="uploadPhoto()" #uploadPhotoForm="ngForm">
+	<form *ngIf="!photos || photos.length < 5" (ngSubmit)="uploadPhoto()" #uploadPhotoForm="ngForm">
 		<input class="form-control" type="file" name="photo" id="avatar" (change)="onFileChange($event)" #fileInput>
 		<div>
 			<button type="submit" class="btn">Add Photo</button>

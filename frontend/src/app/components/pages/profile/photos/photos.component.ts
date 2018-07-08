@@ -19,6 +19,10 @@ export class PhotosComponent implements OnInit {
   constructor(private profileService: ProfileService) { }
 
   ngOnInit() {
+    this.loadPhotos();
+  }
+
+  loadPhotos() {
     this.profileService.getProfilePhotos().subscribe(response => {
       if (response['success'] == 1) {
         this.photos = response['photos'];
@@ -30,6 +34,7 @@ export class PhotosComponent implements OnInit {
     this.profileService.uploadPhoto(this.photoName, this.photoType, this.photoValue).subscribe(response => {
         if (response['success'] == 1) {
             this.photoUploaded = 1;
+            this.loadPhotos();
         } else {
             this.photoUploaded = 2;
         }
@@ -48,5 +53,77 @@ export class PhotosComponent implements OnInit {
       };
     }
   }
+
+ updateAvatarInArray(photo_hash) {
+  this.photos.forEach(function(element) {
+    if (element.hash == photo_hash) {
+      element.avatar = 1;
+    } else {
+      element.avatar = 0;
+    }
+  });
+ }
+
+  setAvatar(photo_hash) {
+    this.profileService.setAvatar(photo_hash).subscribe(response => {
+        if (response['success'] == 1) {
+            this.updateAvatarInArray(photo_hash);
+        } else {
+            alert('Error');
+        }
+    });
+  }
+
+
+ deletePhotoFromArray(photo_hash) {
+  for (var i = this.photos.length - 1; i >= 0; i--) {
+    if (this.photos[i].hash == photo_hash) {
+      this.photos.splice(i, 1);
+    }
+  }
+ }
+
+  isAvatar(photo_hash) {
+    for (var i = 0; i <= this.photos.length - 1; i++) {
+      if (this.photos[i].hash == photo_hash && this.photos[i].avatar == 1) {
+        return true;
+      }
+      if (i == this.photos.length - 1) {
+        return false;
+      }
+    }
+  }
+
+  getNewFirstAvatarHash() {
+    for (var i = 0; i <= this.photos.length - 1; i++) {
+      if (this.photos[i].avatar == 0) {
+        return this.photos[i].hash;
+      }
+      if (i == this.photos.length - 1) {
+        return this.photos[i].hash;
+      }
+    }
+  }
+
+  deletePhoto(photo_hash) {
+    this.profileService.deletePhoto(photo_hash).subscribe(response => {
+        if (response['success'] == 1) {
+          if (this.isAvatar(photo_hash) && this.photos.length > 1) {
+            let newAvatarHash = this.getNewFirstAvatarHash();
+            this.profileService.setAvatar(newAvatarHash).subscribe(response => {
+                if (response['success'] == 1) {
+                    this.updateAvatarInArray(newAvatarHash);
+                } else {
+                    alert('Error');
+                }
+            });
+          }
+          this.deletePhotoFromArray(photo_hash);
+        } else {
+            alert('Error');
+        }
+    });
+  }
+
 
 }

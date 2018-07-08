@@ -75,5 +75,15 @@ export class ProfileService {
     return this.apiService.request('profile/get_profile_photos', args)
   }
 
+  setAvatar(photo_hash) {
+    let args = {'photo_hash': photo_hash}
+    return this.apiService.request('profile/set_avatar', args)
+  }
+
+  deletePhoto(photo_hash) {
+    let args = {'photo_hash': photo_hash}
+    return this.apiService.request('profile/delete_photo', args)
+  }
+
 }
 

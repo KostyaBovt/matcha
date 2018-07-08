@@ -5,6 +5,7 @@ from shared import Hasher
 from shared import FileSaver
 from shared import vdf
 import base64
+import os
 
 app = Flask(__name__)
 app.config.from_pyfile('../config/app_config.py')
@@ -623,3 +624,65 @@ def get_profile_photos():
 
     success = 1
     return jsonify({'success': success, 'method': 'get_profile_photos', 'photos': response_photos})
+
+@app.route("/profile/set_avatar", methods=['POST'])
+def set_avatar():
+    success = 0
+    result = []
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    # get db
+    db = shared.database()
+
+    # first set all photos to avatar = 0 (just reset)
+    sql = 'update photos set avatar=0 where user_id={:d}'.format(user_id)
+    db.request(sql)
+
+    # set new avatar
+    photo_hash = request.json['photo_hash']
+    sql = "update photos set avatar=1 where hash='{:s}'".format(photo_hash)
+    db.request(sql)
+
+    success = 1
+    return jsonify({'success': success, 'method': 'set_avatar'})
+
+@app.route("/profile/delete_photo", methods=['POST'])
+def delete_photo():
+    success = 0
+    result = []
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    # get db
+    db = shared.database()
+
+    # actually delete photo
+    photo_hash = request.json['photo_hash']
+    sql = "delete from photos where user_id={:d} and hash='{:s}'".format(user_id, photo_hash)
+    db.request(sql)
+
+    os.remove("/vagrant/backend/data/photos/" + photo_hash + ".jpeg")
+
+    success = 1
+    return jsonify({'success': success, 'method': 'delete_photo'})
