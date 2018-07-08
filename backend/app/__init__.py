@@ -2,7 +2,9 @@ from flask import Flask
 from flask import jsonify, request
 from shared import Mailer
 from shared import Hasher
+from shared import FileSaver
 from shared import vdf
+import base64
 
 app = Flask(__name__)
 app.config.from_pyfile('../config/app_config.py')
@@ -538,12 +540,8 @@ def confirm_update_email():
 
 @app.route("/profile/upload_photo", methods=['POST'])
 def profile_upload_photo():
-    vdf(request.json, 'upload_photo_args')
     success = 0
     result = []
-
-    # get db
-    db = shared.database()
 
     # authorize
     token = request.json['token']
@@ -556,6 +554,72 @@ def profile_upload_photo():
     # authorized user id
     user_id = auth_result['user_id']
 
-    # photo = request.json['photo']
+    # get db, hasher filesaver
+    filesaver = FileSaver()
+    hasher = Hasher()
+    db = shared.database()
+
+    # check how many photos already per current
+    sql = 'select * from photos where user_id={:d}'.format(user_id)
+    db.request(sql)
+    if db.getRowCount() is 5: # TO TEST!!!!!!!!!!!!!!!!!!!!!!!
+        return jsonify({'success': success})
+
+    avatar = 0
+    if not db.getRowCount():
+        avatar = 1
+
+    photo_value = base64.b64decode(request.json['photoValue'])
+    photo_hash = hasher.generate_hash(32)
+    photo_extention = 'jpeg'
+    photo_path = '/vagrant/backend/data/photos'
+    filesaver.save_file(value=photo_value, name=photo_hash, extention="jpeg", path=photo_path)
+
+
+    #insert new photo to db
+    sql = """
+        insert into photos (user_id, name, hash, avatar)
+        values ({:d}, '{:s}', '{:s}', {:d}) returning id
+    """.format(user_id, photo_hash + "." + photo_extention, photo_hash, avatar)
+    db.request(sql)
 
     return jsonify({'success': 1, 'method': 'profile/upload_photo'})
+
+@app.route("/profile/get_profile_photos", methods=['POST'])
+def get_profile_photos():
+    success = 0
+    result = []
+    filesaver = FileSaver()
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    # get db
+    db = shared.database()
+
+    # check how many photos already per current
+    sql = 'select * from photos where user_id={:d}'.format(user_id)
+    db.request(sql)
+    if not db.getRowCount():
+        return jsonify({'success': success})
+
+    response_photos = []
+    photos = db.getResult()
+    for photo in photos:
+        response_photo = {};
+        response_photo['src'] = base64.b64encode(filesaver.read_file(photo['name'], '/vagrant/backend/data/photos'))
+        response_photo['avatar'] = photo['avatar']
+        response_photo['hash'] = photo['hash']
+        response_photos.append(response_photo)
+
+    success = 1
+    return jsonify({'success': success, 'method': 'get_profile_photos', 'photos': response_photos})

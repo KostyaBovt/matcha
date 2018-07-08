@@ -6,3 +6,5 @@
 
 connect to database in terminal:
 	psql -d matcha
+
+

@@ -221,6 +221,30 @@ ALTER TABLE ONLY email_update
     ADD CONSTRAINT email_update_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
+-- create photos table
+
+DROP TABLE IF EXISTS photos;
+CREATE TABLE photos (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    name character varying(128) NOT NULL,
+    hash character varying(128) NOT NULL,
+    avatar integer NOT NULL DEFAULT 0
+);
+
+ALTER TABLE ONLY photos
+    ADD CONSTRAINT photos_pk PRIMARY KEY (id);
+
+CREATE SEQUENCE photos_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER TABLE ONLY photos ALTER COLUMN id SET DEFAULT nextval('photos_id_seq'::regclass);
+
+
 -- DATA INSERT
 insert into users (id, email, password, confirmed) values (48, 'kostya.bovt@gmail.com', 'c4ca4238a0b923820dcc509a6f75849b', 1);
 insert into users (id, email, password, confirmed) values (100, 'some.email@gmail.com', 'c4ca4238a0b923820dcc509a6f75849b', 1);

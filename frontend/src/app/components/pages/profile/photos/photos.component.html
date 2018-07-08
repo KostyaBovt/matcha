@@ -1,4 +1,12 @@
 <div>
+	<div class="photo" *ngFor="let photo of photos">
+		<img class="fitdiv" src="data:image/jpeg;base64,{{photo.src}}">
+		<div class="bottom_buttons">
+			<button class="btn-info">Set avatar</button>	
+			<button class="btn-danger">Delete</button>	
+		</div>	
+	</div>
+	<hr>
 	<form (ngSubmit)="uploadPhoto()" #uploadPhotoForm="ngForm">
 		<input class="form-control" type="file" name="photo" id="avatar" (change)="onFileChange($event)" #fileInput>
 		<div>

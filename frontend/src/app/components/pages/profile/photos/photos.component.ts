@@ -12,11 +12,18 @@ export class PhotosComponent implements OnInit {
   photoValue: string = "some_photo_value";
   photoUploaded : number = 0;
 
+  photos: Array<any>;
+
   @ViewChild('fileInput') fileInput: ElementRef;
 
   constructor(private profileService: ProfileService) { }
 
   ngOnInit() {
+    this.profileService.getProfilePhotos().subscribe(response => {
+      if (response['success'] == 1) {
+        this.photos = response['photos'];
+      }
+    });
   }
 
   uploadPhoto() {

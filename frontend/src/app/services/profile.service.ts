@@ -70,5 +70,10 @@ export class ProfileService {
     return this.apiService.request('profile/upload_photo', args)
   }
 
+  getProfilePhotos() {
+    let args = {}
+    return this.apiService.request('profile/get_profile_photos', args)
+  }
+
 }
 
