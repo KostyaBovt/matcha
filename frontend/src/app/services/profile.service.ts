@@ -85,5 +85,10 @@ export class ProfileService {
     return this.apiService.request('profile/delete_photo', args)
   }
 
+  updateGeotype(geo_type) {
+    let args = {'geo_type': geo_type}
+    return this.apiService.request('profile/update_geotype', args)
+  }
+
 }
 

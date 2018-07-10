@@ -1,3 +1,18 @@
-<p>
-  location works!
-</p>
+<script src="http://maps.googleapis.com/maps/api/js?key=[YOUR_API_KEY]"></script>
+<div>
+	<form  #LocationFlagForm="ngForm">
+		<div><h4>Location Settings:</h4></div>
+		<div class="row">
+			<div class="col-sm-3">Location type</div>
+			<div class="col-sm-4">
+				<select class="form-control" [(ngModel)]="geo_type" name="geo_type" (change)="updateGeotype()">
+					<option *ngFor="let geotype_list_item of geotype_list" [value]="geotype_list_item.value">{{geotype_list_item.name}}</option>
+				</select>
+			</div>
+		</div>
+	</form>
+</div>
+
+<div>geo_type: {{geo_type}}</div>
+<div>geo_lat: {{geo_lat}}</div>
+<div>geo_lng: {{geo_lng}}</div>

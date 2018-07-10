@@ -685,4 +685,33 @@ def delete_photo():
     os.remove("/vagrant/backend/data/photos/" + photo_hash + ".jpeg")
 
     success = 1
-    return jsonify({'success': success, 'method': 'delete_photo'})
+    return jsonify({'success': success, 'method': 'profile/delete_photo'})
+
+
+@app.route("/profile/update_geotype", methods=['POST'])
+def update_geotype():
+    success = 0
+    result = []
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+    # get db
+    db = shared.database()
+
+    # actually delete photo
+    geo_type = int(request.json['geo_type'])
+
+    sql = "update users_info set geo_type={:d} where user_id={:d}".format(geo_type, user_id)
+    db.request(sql)
+
+    success = 1
+    return jsonify({'success': success, 'method': 'profile/update_geotype'})
