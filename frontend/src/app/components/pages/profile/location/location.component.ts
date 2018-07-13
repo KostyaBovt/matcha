@@ -8,8 +8,8 @@ import { ProfileService } from '../../../../services/profile.service';
 })
 export class LocationComponent implements OnInit {
   geo_type: number;
-  geo_lat: number;
-  geo_lng: number;
+  geo_lat: number = 50.4317;
+  geo_lng: number = 30.5163;
   geotype_list: Array<any> =  [
 	  {value: 1, name: "Auto"},
 	  {value: 2, name: "Manual"},
