@@ -90,5 +90,10 @@ export class ProfileService {
     return this.apiService.request('profile/update_geotype', args)
   }
 
+  updateCoords(lat, lng) {
+    let args = {'lat': lat, 'lng': lng}
+    return this.apiService.request('profile/update_coords', args)
+  }
+
 }
 

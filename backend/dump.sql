@@ -37,8 +37,8 @@ CREATE TABLE users_info (
     bio text,
     geo boolean DEFAULT false NOT NULL,
     geo_type integer DEFAULT 1 NOT NULL,
-    geo_lat numeric(10,5),
-    geo_lng numeric(10,5),
+    geo_lat numeric(20,15),
+    geo_lng numeric(20,15),
     rating numeric(5,4) DEFAULT 0.5 NOT NULL
 );
 
@@ -277,3 +277,9 @@ insert into likes (user_id_1, user_id_2, action) values (48, 100, 1);
 insert into likes (user_id_1, user_id_2, action) values (100, 48, 1);
 
 
+-- helpers:
+ALTER TABLE users_info DROP column geo_lat;
+ALTER TABLE users_info DROP column geo_lng;
+
+ALTER TABLE users_info ADD  geo_lat numeric(20,15);
+ALTER TABLE users_info ADD  geo_lng numeric(20,15);
