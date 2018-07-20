@@ -15,30 +15,35 @@ export class MainComponent {
 	myIP: string;
 
   constructor(private profileService: ProfileService, private http: HttpClient) {
+
+  }
+
+  ngOnInit() {
+    console.log('init main');
   	this.profileService.get().subscribe(response => {
 
   		if (response['success'] == 1 && response['result']['geo_type'] == 1) {
   			// if we get profile data geo_type is 1 (auto)
 
-  			if ("geolocation" in navigator) {
-  				let that = this;
+				let that = this;
+        if ("geolocation" in navigator) {
   				// if geolocation is supported by browser
   				navigator.geolocation.getCurrentPosition(
-  					function success(position) {
+  					function(position) {
   						// if browser rturn geolocation
   						let lat = position.coords.latitude;
   						let lng =  position.coords.longitude;
-  						alert("now we will update geolocation:" + lat + ", " + lng);
-  						that.profileService.updateCoords(lat, lng).subscribe(response => {
-					        if (response['success'] == 1) {
+              that.profileService.updateCoords(lat, lng).subscribe(response => {
+                  if (response['success'] == 1) {
+        						console.log("main comp: get from browser and update db:" + lat + ", " + lng);
 					        } else {
-					            alert('error! cant update coordinates');
+					            console.log('error! cant update coordinates');
 					        }
 					    });
   					},
-  					function error(error_message) {
+  					function(error_message) {
   						// if user deniad geolocation in browser
-  						alert('user denied geolocation');
+  						console.log('user denied geolocation');
   						that.getIP().subscribe(response => {
   							let IP_adress = response['ip'];
   							that.getLocationByIP(IP_adress).subscribe(response => {
@@ -47,7 +52,7 @@ export class MainComponent {
 		  						that.profileService.updateCoords(lat, lng).subscribe(response => {
 							        if (response['success'] == 1) {
 							        } else {
-							            alert('error! cant update coordinates');
+							            console.log('error! cant update coordinates');
 							        }
 							    });
   							});
@@ -56,21 +61,30 @@ export class MainComponent {
   				);
   			} else {
   				// if broser does not support geolocation
-  				alert('broeser doesnt suport geolocatio');
+  				console.log('browser doesnt suport geolocation');
+            that.getIP().subscribe(response => {
+              let IP_adress = response['ip'];
+              that.getLocationByIP(IP_adress).subscribe(response => {
+                let lat = response['lat'];
+                let lng = response['lon'];
+                that.profileService.updateCoords(lat, lng).subscribe(response => {
+                    if (response['success'] == 1) {
+                    } else {
+                        console.log('error! cant update coordinates');
+                    }
+                });
+              });
+            });
 
   			}
 
 
   		} else {
-  			// if we cannot get profiele data
-  			alert('geolocation is set to manual');
-  		}
+  			// if we cannot get profiele data or geotype is manual
+  			console.log('geolocation is set to manual or cant get user');
+      }
 
   	});
-
-  }
-
-  OnInit() {
   }
 
   getLocationByIP(IP_adress) {

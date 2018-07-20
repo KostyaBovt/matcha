@@ -9,16 +9,22 @@
 				</select>
 			</div>
 		</div>
+		<div class="row">
+			<div *ngIf="geo_type == 1" class="col-sm-12">Choose manual type to define your location manually</div>
+			<div *ngIf="geo_type == 2" class="col-sm-12">Tap on map to define your location</div>
+		</div>
 	</form>
 </div>
 
 <agm-map [latitude]="geo_lat" [longitude]="geo_lng" [zoom]="12" (mapClick)="onChooseLocation($event)">
-	<agm-marker [latitude]="geo_lat_marker" [longitude]="geo_lng_marker"></agm-marker>
-	
+	<agm-marker *ngIf="markerUploaded" [latitude]="geo_lat_marker" [longitude]="geo_lng_marker"></agm-marker>
+	 
 </agm-map>
 
-<div>geo_type: {{geo_type}}</div>
+
+<!-- <div>geo_type: {{geo_type}}</div>
 <div>geo_lat: {{geo_lat}}</div>
 <div>geo_lng: {{geo_lng}}</div>
-
-https://www.youtube.com/watch?v=lApggVS0icc
+<div>geo_lat_marker: {{geo_lat_marker}}</div>
+<div>geo_lng_marker: {{geo_lng_marker}}</div>
+<div>markerUploaded: {{markerUploaded}}</div> -->

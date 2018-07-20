@@ -721,7 +721,6 @@ def update_geotype():
 
 @app.route("/profile/update_coords", methods=['POST'])
 def update_coords():
-    vdf('alert')
     success = 0
     result = []
 
