@@ -747,3 +747,31 @@ def update_coords():
 
     success = 1
     return jsonify({'success': success, 'method': 'profile/update_coords'})
+
+@app.route("/explore/search_mates", methods=['POST'])
+def search_mates():
+    success = 0
+    result = []
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+    # get db
+    db = shared.database()
+
+    # actually delete photo
+    # lng = float(request.json['lng'])
+
+    # sql = "update users_info set geo_lat={:5.15f}, geo_lng={:5.15f} where user_id={:d}".format(lat, lng, user_id)
+    # db.request(sql)
+
+    success = 1
+    return jsonify({'success': success, 'method': 'explore/search_mates'})

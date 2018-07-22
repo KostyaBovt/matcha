@@ -7,7 +7,7 @@ export class ProfileService {
   constructor(private apiService: ApiService) { }
 
   get() {
-	return this.apiService.request('profile/get', {});
+  	return this.apiService.request('profile/get', {});
   }
 
   update(

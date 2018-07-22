@@ -21,7 +21,6 @@ export class ModifyComponent implements OnInit {
 	  {value: 0, name: ""},
 	  {value: 1, name: "Male"},
 	  {value: 2, name: "Female"},
-	  {value: 3, name: "Other"},
   ];
 
   prefer_list: Array<any> =  [

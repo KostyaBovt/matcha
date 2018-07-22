@@ -8,3 +8,17 @@ connect to database in terminal:
 	psql -d matcha
 
 
+
+select users.*, users_info.*, user_match.matched_interests, 2 * 3961 * asin(sqrt((sin(radians((40 - 50) / 2))) ^ 2 + cos(radians(50)) * cos(radians(40)) * (sin(radians((30 - 20) / 2))) ^ 2)) as distance
+from users
+inner join users_info on users.id = users_info.user_id
+inner join
+	(select user_id, count(interest_id) as matched_interests 
+	from users_interests 
+	where interest_id in (select interest_id from users_interests where user_id=100)
+	and not user_id=100 
+	group by user_id) as user_match
+on users.id=user_match.user_id
+where not users.id = 100;
+
+	2 * 3961 * asin(sqrt((sin(radians((lat2 - lat1) / 2))) ^ 2 + cos(radians(lat1)) * cos(radians(lat2)) * (sin(radians((lon2 - lon1) / 2))) ^ 2)) as distance
