@@ -15,7 +15,11 @@ Vagrant.configure("2") do |config|
   # config.vm.box = "hashicorp/precise64"
 
   # for box LXC
-  config.vm.box = "fgrehm/trusty64-lxc"
+  # config.vm.box = "fgrehm/trusty64-lxc"
+
+  # for VB
+  config.vm.box = "ubuntu/trusty64"
+
   config.vm.network "forwarded_port", guest: 80, host: 8480
   config.vm.network "forwarded_port", guest: 4200, host: 4200
   
@@ -94,7 +98,7 @@ Vagrant.configure("2") do |config|
     virtualenv /vagrant/backend/app_venv
     source /vagrant/backend/app_venv/bin/activate
 
-    sudo /vagrant/backend/app_venv/bin/pip install uwsgi flask Flask-Mail
+    sudo /vagrant/backend/app_venv/bin/pip install uwsgi flask Flask-Mail simplejson psycopg2
 
     # config nginx by copy config
     sudo cp /vagrant/backend/config/nginx_config.conf /etc/nginx/sites-available/matcha

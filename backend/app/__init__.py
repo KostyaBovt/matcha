@@ -767,6 +767,55 @@ def search_mates():
     # get db
     db = shared.database()
 
+    # get authorized user_info
+    sql = """
+        select users.*, users_info.*
+        from users
+        inner join users_info
+        on users.id = users_info.user_id
+        where users.id='{:d}'
+    """.format(user_id)
+
+    db.request(sql)
+    if db.getRowCount():
+        auth_user_info = db.getResult()[0]
+        vdf(auth_user_info)
+        auth_user_info['rating'] = str(auth_user_info['rating'])
+        auth_user_info['geo_lat'] = str(auth_user_info['geo_lat'])
+        auth_user_info['geo_lng'] = str(auth_user_info['geo_lng'])
+    else:    
+        return jsonify({'success': success})
+
+    vdf(request.json)
+
+    # get matched mates
+    sql = """
+        select users.*, users_info.*, user_match.matched_interests, 2 * 3961 * asin(sqrt((sin(radians((users_info.geo_lat - {:s}) / 2))) ^ 2 + cos(radians({:s})) * cos(radians(users_info.geo_lat)) * (sin(radians((users_info.geo_lng - {:s}) / 2))) ^ 2)) as distance
+        from users
+        inner join users_info on users.id = users_info.user_id
+        inner join
+            (select user_id, count(interest_id) as matched_interests 
+            from users_interests 
+            where interest_id in (select interest_id from users_interests where user_id={:d})
+            and not user_id={:d}
+            group by user_id) as user_match
+        on users.id=user_match.user_id
+        where not users.id={:d}
+        and users_info.geo_lat is not null
+        and users_info.geo_lng is not null;
+    """.format(auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id)
+
+    db.request(sql)
+    if db.getRowCount():
+        result_array = db.getResult()
+        for item in result_array:
+            item['rating'] = str(item['rating'])
+            item['geo_lat'] = str(item['geo_lat'])
+            item['geo_lng'] = str(item['geo_lng'])
+    else:
+        success = 0
+        return jsonify({'success': success, 'result': None})
+
     # actually delete photo
     # lng = float(request.json['lng'])
 
@@ -774,4 +823,4 @@ def search_mates():
     # db.request(sql)
 
     success = 1
-    return jsonify({'success': success, 'method': 'explore/search_mates'})
+    return jsonify({'success': success, 'method': 'explore/search_mates', 'result': result_array})
