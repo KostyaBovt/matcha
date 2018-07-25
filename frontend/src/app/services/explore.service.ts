@@ -9,4 +9,9 @@ export class ExploreService {
   searchMates(args) {
   	return this.apiService.request('explore/search_mates', args);
   }
+
+  like(mate_id) {
+  	let args = {'mate_id': mate_id}
+  	return this.apiService.request('explore/like', args);
+  }
 }

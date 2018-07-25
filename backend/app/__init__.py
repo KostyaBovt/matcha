@@ -779,48 +779,165 @@ def search_mates():
     db.request(sql)
     if db.getRowCount():
         auth_user_info = db.getResult()[0]
-        vdf(auth_user_info)
         auth_user_info['rating'] = str(auth_user_info['rating'])
         auth_user_info['geo_lat'] = str(auth_user_info['geo_lat'])
         auth_user_info['geo_lng'] = str(auth_user_info['geo_lng'])
     else:    
         return jsonify({'success': success})
 
-    vdf(request.json)
+    # unpack request parameters
+    interests = request.json['interests']
+    sort = request.json['sort']
+    sort = sort.split('_')
+    bottomAge = int(request.json['bottomAge'])
+    upperAge = int(request.json['upperAge'])
+    bottomRating = float(request.json['bottomRating'])
+    upperRating = float(request.json['upperRating'])
+    woman = request.json['woman']
+    man = request.json['man']
+    radius = float(request.json['radius'])
+
+    split_interests = [x.strip('\'\" ') for x in interests.split(',')]
+    split_interests = [x for x in split_interests if x]
+
+    inline_interests = "('some_blank_interest_to_avoid_error'"
+    counter = 1
+    for interest in split_interests:
+        delimiter = ''
+        if counter:
+            delimiter = ', '
+        inline_interests = inline_interests + delimiter + "'" + interest + "'"
+        counter = counter + 1
+    inline_interests = inline_interests + ')'
+
+    # vdf(split_interests, 'split_interests')
+    # vdf(inline_interests, 'inline_interests')
+
+    # vdf(request.json, 'request')
 
     # get matched mates
     sql = """
-        select users.*, users_info.*, user_match.matched_interests, 2 * 3961 * asin(sqrt((sin(radians((users_info.geo_lat - {:s}) / 2))) ^ 2 + cos(radians({:s})) * cos(radians(users_info.geo_lat)) * (sin(radians((users_info.geo_lng - {:s}) / 2))) ^ 2)) as distance
+        select users.*, users_info.*, user_match.matched_interests, distances.distance, date_part('year', AGE(users_info.birth)) as "age", avatars_table.avatar_name
         from users
         inner join users_info on users.id = users_info.user_id
         inner join
-            (select user_id, count(interest_id) as matched_interests 
-            from users_interests 
-            where interest_id in (select interest_id from users_interests where user_id={:d})
+            (select user_id, name as "avatar_name" 
+            from photos
+            where photos.avatar = 1) as avatars_table
+        on users.id=avatars_table.user_id
+        left join
+            (select user_id, count(interests.interest) as matched_interests 
+            from users_interests
+            inner join interests on users_interests.interest_id=interests.id
+            where interests.interest in {:s}
             and not user_id={:d}
             group by user_id) as user_match
         on users.id=user_match.user_id
+        inner join
+            (select users_info.user_id, 2 * 3961 * asin(sqrt((sin(radians((users_info.geo_lat - {:s}) / 2))) ^ 2 + cos(radians({:s})) * cos(radians(users_info.geo_lat)) * (sin(radians((users_info.geo_lng - {:s}) / 2))) ^ 2)) as distance
+            from users_info
+            where not user_id={:d}
+            and users_info.geo_lat is not null
+            and users_info.geo_lng is not null
+            ) as distances
+        on users.id=distances.user_id
         where not users.id={:d}
         and users_info.geo_lat is not null
-        and users_info.geo_lng is not null;
-    """.format(auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id)
+        and users_info.geo_lng is not null
+        and distance < {:f}\n""".format(inline_interests, user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, radius)
 
+    if (man and not woman):
+        sql = sql + '\t\tand users_info.gender=1\n'
+    if (woman and not man):
+        sql = sql + '\t\tand users_info.gender=2\n'
+
+    sql = sql + '\t\tand users_info.rating * 100 >= {:f}\n'.format(bottomRating)
+    sql = sql + '\t\tand users_info.rating * 100 <= {:f}\n'.format(upperRating)
+
+    sql = sql + '\t\tand EXTRACT(year from AGE(users_info.birth)) >= {:d}\n'.format(bottomAge)
+    sql = sql + '\t\tand EXTRACT(year from AGE(users_info.birth)) <= {:d}\n'.format(upperAge)
+
+    sort_mapping = {
+        'match': 'user_match.matched_interests',
+        'age': 'users_info.birth',
+        'rating': 'users_info.rating',
+        'dist': 'distances.distance'
+    }
+
+    sort_attribute = sort_mapping[sort[0]]
+    sort_order = sort[1]
+    if sort_attribute == 'age':
+        if sort_order =='asc':
+            sort_order = 'desc'
+        else:
+            sort_order = 'asc'
+
+    sql = sql + '\t\torder by ' + sort_attribute + ' ' + sort_order
+
+    # vdf(sql, 'sql')
+
+    filesaver = FileSaver()
     db.request(sql)
-    if db.getRowCount():
+    if db.getRowCount() and not db.getError():
         result_array = db.getResult()
+        # vdf(result_array, 'result')
         for item in result_array:
             item['rating'] = str(item['rating'])
             item['geo_lat'] = str(item['geo_lat'])
             item['geo_lng'] = str(item['geo_lng'])
+            item['avatar_src'] = base64.b64encode(filesaver.read_file(item['avatar_name'], '/vagrant/backend/data/photos'))
+    elif not db.getError():
+        success = 1
+        return jsonify({'success': success, 'result': None})
     else:
         success = 0
         return jsonify({'success': success, 'result': None})
 
-    # actually delete photo
-    # lng = float(request.json['lng'])
-
-    # sql = "update users_info set geo_lat={:5.15f}, geo_lng={:5.15f} where user_id={:d}".format(lat, lng, user_id)
-    # db.request(sql)
-
     success = 1
     return jsonify({'success': success, 'method': 'explore/search_mates', 'result': result_array})
+
+
+
+@app.route("/explore/like", methods=['POST'])
+def like():
+    success = 0
+    result = []
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    mate_id = request.json['mate_id']
+
+    # get db
+    db = shared.database()
+
+    # get authorized user_info
+    sql = """
+        select *
+        from likes
+        where user_id_1={:d}
+        and user_id_2={:d}
+    """.format(user_id, mate_id)
+
+    # actions: 1 - like, 2 - dislike
+    db.request(sql)
+    if db.getRowCount():
+        # just update action
+        sql = 'update likes set action=1 where user_id_1={:d} and user_id_2={:d}'.format(user_id, mate_id)
+        db.request(sql)
+    else:
+        sql = 'insert into likes (user_id_1, user_id_2, action) values ({:d}, {:d}, 1)'.format(user_id, mate_id)
+        db.request(sql)
+
+
+
+

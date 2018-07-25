@@ -44,11 +44,10 @@
 				<div class="col-sm-5">Sort by:</div>
 				<div class="col-sm-7">
 					<select class="form-control" [(ngModel)]="sort" name="sort">
-						<option *ngFor="let sort_list_item of sort_list" [value]="sort_list_item.value">{{sort_list_item.name}}</option>
+						<option *ngFor="let sort_list_item of sort_list" [value]="sort_list_item.value">{{sort_list_item.name}} <span *ngIf="sort_list_item.order == 'asc'">&uarr;</span> <span *ngIf="sort_list_item.order == 'desc'">&darr;</span></option>
 					</select>
 				</div>
 			</div>
-
 			<div>
 				<button type="submit" class="btn">Search</button>
 			</div>
@@ -56,7 +55,28 @@
 
 		</form>
 	</div>
-	<div class="col-sm-4">
+	<div class="col-sm-8">
 		<div><h6>SEARCH RESULTS:</h6></div>
+		<div class="mate" *ngFor="let mate of finded_mates">
+			<div class="row">
+				<div class="col-sm-3">
+					<div class="photo">
+						<img class="fitdiv" src="data:image/jpeg;base64,{{mate.avatar_src}}">
+					</div>
+				</div>
+				<div class="col-sm-5">
+					id: {{mate.user_id}}
+					<h4>{{mate.username}}, <span *ngIf="mate.gender == 1">&#9792;</span> <span *ngIf="mate.gender  == 2">&#9793;</span></h4>
+					<h5>{{mate.fname}} {{mate.sname}}</h5>
+					<h6>Distance: {{mate.distance}}</h6>
+					<h6>Match: {{mate.matched_interests}}</h6>
+					<h6>Rating: {{mate.rating}}</h6>
+				</div>
+				<div class="col-sm-3">
+					<button type="button" class="btn btn-primary" (click)="like(mate.user_id)" >Like</button>	
+					<button type="button" class="btn btn-danger" (click)="dislike(mate.user_id)" >Dislike</button>	
+				</div>
+			</div>
+		</div>
 	</div>
 </div>

@@ -22,15 +22,21 @@ export class ExploreComponent implements OnInit {
   radius: number = 50;
 
   sort_list: Array<any> =  [
-	  {value: "match", name: "Match"},
-	  {value: "rating", name: "Rating"},
-	  {value: "dist", name: "Distance"},
-	  {value: "age", name: "Age"},
+    {value: "match_desc", name: "Match", order: "desc"},
+    {value: "match_asc", name: "Match", order: "asc"},
+    {value: "age_desc", name: "Age", order: "desc"},
+    {value: "age_asc", name: "Age", order: "asc"},
+    {value: "rating_desc", name: "Rating", order: "desc"},
+    {value: "rating_asc", name: "Rating", order: "asc"},
+    {value: "dist_desc", name: "Distance", order: "desc"},
+    {value: "dist_asc", name: "Distance", order: "asc"},
   ];
 
-  sort: string = "match";
+  sort: string= "match_desc";
   sex_preference: number;
   age: number;
+
+  finded_mates: Array<any> = [];
 
   constructor(private http: HttpClient, private profileService: ProfileService, private exploreService: ExploreService) { }
 
@@ -94,10 +100,24 @@ export class ExploreComponent implements OnInit {
     this.exploreService.searchMates(args).subscribe(response => {
         if (response['success'] == 1) {
             console.log(response);
+            this.finded_mates = response['result'];
         } else {
         	alert('some error');
         }
     });
+  }
+
+  like(mate_id) {
+    this.exploreService.like(mate_id).subscribe(response => {
+        if (response['success'] == 1) {
+        } else {
+          alert('some error');
+        }
+    });
+  }
+
+  dislike() {
+    alert('dislike');
   }
 
   private calucateAge(dateString) {

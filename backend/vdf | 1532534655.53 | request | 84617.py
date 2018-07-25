@@ -1,0 +1,1 @@
+{u'interests': u'football, dogs, science, food, FIFA, flowers', u'sort': u'match_desc', u'bottomRating': 0, u'woman': True, u'upperAge': 30, u'bottomAge': u'18', u'token': u'jvjx18uwSqY7GzL7ZHHLU24stGMbCcGfeA9BMWlvVWi64yEP0FLF', u'radius': 50, u'upperRating': 100, u'man': False}
