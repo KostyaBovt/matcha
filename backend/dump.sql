@@ -244,6 +244,9 @@ CREATE SEQUENCE photos_id_seq
 
 ALTER TABLE ONLY photos ALTER COLUMN id SET DEFAULT nextval('photos_id_seq'::regclass);
 
+ALTER TABLE ONLY photos
+    ADD CONSTRAINT photos_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
 
 -- DATA INSERT
 insert into users (id, email, password, confirmed) values (48, 'kostya.bovt@gmail.com', 'c4ca4238a0b923820dcc509a6f75849b', 1);
@@ -277,9 +280,13 @@ insert into likes (user_id_1, user_id_2, action) values (48, 100, 1);
 insert into likes (user_id_1, user_id_2, action) values (100, 48, 1);
 
 
+
+
 -- helpers:
 ALTER TABLE users_info DROP column geo_lat;
 ALTER TABLE users_info DROP column geo_lng;
 
 ALTER TABLE users_info ADD  geo_lat numeric(20,15);
 ALTER TABLE users_info ADD  geo_lng numeric(20,15);
+
+

@@ -66,10 +66,10 @@
 				</div>
 				<div class="col-sm-5">
 					id: {{mate.user_id}}
-					<h4>{{mate.username}}, <span *ngIf="mate.gender == 1">&#9792;</span> <span *ngIf="mate.gender  == 2">&#9793;</span></h4>
+					<h4>{{mate.username}}, {{mate.age }} <span *ngIf="mate.gender == 1">&#9794;</span> <span *ngIf="mate.gender  == 2">&#9793;</span></h4>
 					<h5>{{mate.fname}} {{mate.sname}}</h5>
-					<h6>Distance: {{mate.distance}}</h6>
-					<h6>Match: {{mate.matched_interests}}</h6>
+					<h6>Distance: {{mate.distance | number:'1.1-1'}} km</h6>
+					<h6>Match: <span *ngIf="!mate.matched_interests">0</span>{{mate.matched_interests}}</h6>
 					<h6>Rating: {{mate.rating}}</h6>
 				</div>
 				<div class="col-sm-3">

@@ -2,3 +2,4 @@ wsgi.pyc
 matcha.pyc
 app_venv
 *.pyc
+data_dump.sql

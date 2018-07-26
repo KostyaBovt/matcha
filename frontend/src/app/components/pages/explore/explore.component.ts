@@ -116,8 +116,13 @@ export class ExploreComponent implements OnInit {
     });
   }
 
-  dislike() {
-    alert('dislike');
+  dislike(mate_id) {
+    this.exploreService.dislike(mate_id).subscribe(response => {
+        if (response['success'] == 1) {
+        } else {
+          alert('some error');
+        }
+    });
   }
 
   private calucateAge(dateString) {

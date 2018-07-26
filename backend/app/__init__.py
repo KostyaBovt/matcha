@@ -934,10 +934,56 @@ def like():
         # just update action
         sql = 'update likes set action=1 where user_id_1={:d} and user_id_2={:d}'.format(user_id, mate_id)
         db.request(sql)
+        success = 1
     else:
         sql = 'insert into likes (user_id_1, user_id_2, action) values ({:d}, {:d}, 1)'.format(user_id, mate_id)
+        db.request(sql, False)
+        success = 1
+
+    return jsonify({'success': success, 'method': 'explore/like'})
+
+
+@app.route("/explore/dislike", methods=['POST'])
+def dislike():
+    success = 0
+    result = []
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    mate_id = request.json['mate_id']
+
+    # get db
+    db = shared.database()
+
+    # get authorized user_info
+    sql = """
+        select *
+        from likes
+        where user_id_1={:d}
+        and user_id_2={:d}
+    """.format(user_id, mate_id)
+
+    # actions: 1 - like, 2 - dislike
+    db.request(sql)
+    if db.getRowCount():
+        # just update action
+        sql = 'update likes set action=2 where user_id_1={:d} and user_id_2={:d}'.format(user_id, mate_id)
         db.request(sql)
+        success = 1
+    else:
+        sql = 'insert into likes (user_id_1, user_id_2, action) values ({:d}, {:d}, 2)'.format(user_id, mate_id)
+        db.request(sql, False)
+        success = 1
 
-
-
+    return jsonify({'success': success, 'method': 'explore/dislike'})
 

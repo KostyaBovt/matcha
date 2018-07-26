@@ -2,7 +2,6 @@ import random
 import string
 import hashlib
 
-
 class Hasher(object):
 
 	def __init__(self):

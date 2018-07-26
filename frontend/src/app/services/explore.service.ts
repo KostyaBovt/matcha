@@ -14,4 +14,9 @@ export class ExploreService {
   	let args = {'mate_id': mate_id}
   	return this.apiService.request('explore/like', args);
   }
+
+  dislike(mate_id) {
+  	let args = {'mate_id': mate_id}
+  	return this.apiService.request('explore/dislike', args);
+  }
 }
