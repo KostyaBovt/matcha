@@ -11,6 +11,7 @@ import { ExploreService } from '../../../services/explore.service';
 export class ExploreComponent implements OnInit {
   man: boolean = false;
   woman: boolean = false;
+  online: boolean = false;
 
   bottomAge: number = 18;
   upperAge: number = 100;
@@ -35,6 +36,8 @@ export class ExploreComponent implements OnInit {
   sort: string= "match_desc";
   sex_preference: number;
   age: number;
+
+  page: number = 1;
 
   finded_mates: Array<any> = [];
 
@@ -85,6 +88,11 @@ export class ExploreComponent implements OnInit {
   	this.radius = radius;
   }
 
+  searchMatesInitial() {
+    this.page = 1;
+    this.searchMates(); 
+  }
+
   searchMates() {
   	let args = {
 		'man': this.man,
@@ -96,11 +104,16 @@ export class ExploreComponent implements OnInit {
 		'interests': this.interests,
 		'radius': this.radius,
 		'sort': this.sort,
+    'page': this.page,
+    'online': this.online
   	}
     this.exploreService.searchMates(args).subscribe(response => {
         if (response['success'] == 1) {
             console.log(response);
             this.finded_mates = response['result'];
+            if (response['result'] == null) {
+              this.finded_mates = [];
+            }
         } else {
         	alert('some error');
         }
@@ -110,6 +123,7 @@ export class ExploreComponent implements OnInit {
   like(mate_id) {
     this.exploreService.like(mate_id).subscribe(response => {
         if (response['success'] == 1) {
+          this.searchMates();
         } else {
           alert('some error');
         }
@@ -119,6 +133,7 @@ export class ExploreComponent implements OnInit {
   dislike(mate_id) {
     this.exploreService.dislike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
+          this.searchMates();
         } else {
           alert('some error');
         }
@@ -136,4 +151,13 @@ export class ExploreComponent implements OnInit {
 		 return age;
   }
 
+  nextPage() {
+    this.page = this.page + 1;
+    this.searchMates();
+  }
+
+  prevPage() {
+    this.page = this.page - 1;
+    this.searchMates();
+  }
 }

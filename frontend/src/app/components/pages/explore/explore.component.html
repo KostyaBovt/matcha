@@ -1,6 +1,6 @@
 <div class="row">
 	<div class="col-sm-4">
-		<form  #exploreForm="ngForm" (ngSubmit)="searchMates()">
+		<form  #exploreForm="ngForm" (ngSubmit)="searchMatesInitial()">
 			<div><h6>SEARCH FILTERS:</h6></div>
 			<div class="form-check form-check-inline">
 			  <input class="form-check-input" type="checkbox" id="man" [checked]="man" (change)="man = !man">
@@ -48,6 +48,10 @@
 					</select>
 				</div>
 			</div>
+			<div class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="online" [checked]="online" (change)="online = !online">
+			  <label class="form-check-label" for="inlineCheckbox1">Only online users</label>
+			</div>
 			<div>
 				<button type="submit" class="btn">Search</button>
 			</div>
@@ -56,26 +60,41 @@
 		</form>
 	</div>
 	<div class="col-sm-8">
-		<div><h6>SEARCH RESULTS:</h6></div>
+		<div>
+			<h6 class="d-sm-inline-block">SEARCH RESULTS:</h6>
+			<div *ngIf="finded_mates.length > 0 || page > 1" class="d-sm-inline-block paginator">
+				<button type="button" class="btn btn-primary" (click)="prevPage()" [disabled]="page == 1">Prev</button>
+				Page: {{page}}
+				<button type="button" class="btn btn-primary" (click)="nextPage()" >Next</button>
+			</div>
+		</div>
 		<div class="mate" *ngFor="let mate of finded_mates">
 			<div class="row">
 				<div class="col-sm-3">
 					<div class="photo">
 						<img class="fitdiv" src="data:image/jpeg;base64,{{mate.avatar_src}}">
+						<div> id: {{mate.user_id}} </div>
 					</div>
 				</div>
 				<div class="col-sm-5">
-					id: {{mate.user_id}}
 					<h4>{{mate.username}}, {{mate.age }} <span *ngIf="mate.gender == 1">&#9794;</span> <span *ngIf="mate.gender  == 2">&#9793;</span></h4>
 					<h5>{{mate.fname}} {{mate.sname}}</h5>
 					<h6>Distance: {{mate.distance | number:'1.1-1'}} km</h6>
 					<h6>Match: <span *ngIf="!mate.matched_interests">0</span>{{mate.matched_interests}}</h6>
-					<h6>Rating: {{mate.rating}}</h6>
+					<h6>Rating: {{mate.rating * 100 | number:'2.1-1'}}%</h6>
 				</div>
 				<div class="col-sm-3">
 					<button type="button" class="btn btn-primary" (click)="like(mate.user_id)" >Like</button>	
 					<button type="button" class="btn btn-danger" (click)="dislike(mate.user_id)" >Dislike</button>	
 				</div>
+			</div>
+		</div>
+		<div>
+			<!-- <h6 class="d-sm-inline-block">SEARCH RESULTS:</h6> -->
+			<div *ngIf="finded_mates.length > 0" class="d-sm-inline-block paginator">
+				<button type="button" class="btn btn-primary" (click)="prevPage()" [disabled]="page == 1">Prev</button>
+				Page: {{page}}
+				<button type="button" class="btn btn-primary" (click)="nextPage()" >Next</button>
 			</div>
 		</div>
 	</div>
