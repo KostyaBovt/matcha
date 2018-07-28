@@ -1,4 +1,4 @@
-<div class="row">
+<div *ngIf="!account_shown" class="row matelist">
 	<div class="col-sm-4">
 		<form  #exploreForm="ngForm" (ngSubmit)="searchMatesInitial()">
 			<div><h6>SEARCH FILTERS:</h6></div>
@@ -83,8 +83,9 @@
 					<h6>Match: <span *ngIf="!mate.matched_interests">0</span>{{mate.matched_interests}}</h6>
 					<h6>Rating: {{mate.rating * 100 | number:'2.1-1'}}%</h6>
 				</div>
-				<div class="col-sm-3">
-					<button type="button" class="btn btn-primary" (click)="like(mate.user_id)" >Like</button>	
+				<div class="col-sm-4">
+					<button type="button" class="btn btn-info" (click)="showAccount(mate.user_id)" >Show</button>	
+					<button type="button" class="btn btn-success" (click)="like(mate.user_id)" >Like</button>	
 					<button type="button" class="btn btn-danger" (click)="dislike(mate.user_id)" >Dislike</button>	
 				</div>
 			</div>
@@ -97,5 +98,14 @@
 				<button type="button" class="btn btn-primary" (click)="nextPage()" >Next</button>
 			</div>
 		</div>
+	</div>
+</div>
+
+<div *ngIf="account_shown" class="row account-info">
+	<div class="col-sm-6">
+		ACCOUNT {{account_info.name}} INFO
+	</div>
+	<div class="col-sm-6">
+		<button type="button" class="btn btn-danger" (click)="closeAccount()" >Close</button>	
 	</div>
 </div>

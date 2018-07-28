@@ -41,6 +41,10 @@ export class ExploreComponent implements OnInit {
 
   finded_mates: Array<any> = [];
 
+  account_shown: boolean = false;
+  account_shown_id: number = null;
+  account_info: Object = {};
+
   constructor(private http: HttpClient, private profileService: ProfileService, private exploreService: ExploreService) { }
 
   ngOnInit() {
@@ -159,5 +163,17 @@ export class ExploreComponent implements OnInit {
   prevPage() {
     this.page = this.page - 1;
     this.searchMates();
+  }
+
+  showAccount(mate_id) {
+    this.account_shown = true;
+    this.account_shown_id = mate_id;
+    this.account_info = {'name': "some balk name"};
+  }
+
+  closeAccount() {
+    this.account_shown = false;
+    this.account_shown_id = null;
+    this.account_info = {};
   }
 }

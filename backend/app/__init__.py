@@ -37,6 +37,8 @@ def register():
     db.request(sql)
     user_id = db.getLastRowId()
 
+    sql = "insert into users_info (user_id) values ({:d}) returning id".format(user_id)
+    db.request(sql)
 
     email_hash = hasher.hash_string(email)
     confirm_hash = hasher.generate_hash(32)
@@ -312,8 +314,8 @@ def profile_update():
     username = request.json['username']
     fname = request.json['fname']
     sname = request.json['sname']
-    gender = int(request.json['gender'])
-    sex_preference = int(request.json['sex_preference'])
+    gender = 0 if not request.json['gender'] else int(request.json['gender'])
+    sex_preference = 0 if not request.json['sex_preference'] else int(request.json['sex_preference'])
     birth = request.json['birth']
     phone = request.json['phone']
     bio = request.json['bio']
@@ -886,7 +888,7 @@ def search_mates():
 
     sort_attribute = sort_mapping[sort[0]]
     sort_order = sort[1]
-    if sort_attribute == 'age':
+    if sort[0] == 'age':
         if sort_order =='asc':
             sort_order = 'desc'
         else:
