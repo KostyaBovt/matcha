@@ -168,7 +168,14 @@ export class ExploreComponent implements OnInit {
   showAccount(mate_id) {
     this.account_shown = true;
     this.account_shown_id = mate_id;
-    this.account_info = {'name': "some balk name"};
+    this.exploreService.getMate(mate_id).subscribe(response => {
+        if (response['success'] == 1) {
+            console.log(response);
+            this.account_info = response['result'];
+        } else {
+          alert('some error');
+        }
+    });
   }
 
   closeAccount() {

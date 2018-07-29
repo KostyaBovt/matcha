@@ -73,6 +73,8 @@
 				<div class="col-sm-3">
 					<div class="photo">
 						<img class="fitdiv" src="data:image/jpeg;base64,{{mate.avatar_src}}">
+						<div *ngIf="mate.online_status"> online </div>
+						<div *ngIf="!mate.online_status"> offline </div>
 						<div> id: {{mate.user_id}} </div>
 					</div>
 				</div>

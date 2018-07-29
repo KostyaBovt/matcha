@@ -831,7 +831,10 @@ def search_mates():
 
     # get matched mates
     sql = """
-        select users.*, users_info.*, user_match.matched_interests, distances.distance, date_part('year', AGE(users_info.birth)) as "age", avatars_table.avatar_name, online_table.last_seen
+        select users.*, users_info.*, user_match.matched_interests, distances.distance, date_part('year', AGE(users_info.birth)) as "age", avatars_table.avatar_name, online_table.last_seen,
+         CASE WHEN online_table.last_seen > NOW() - INTERVAL '15 minutes' THEN 1
+              ELSE 0
+         END as online_status
         from users
         inner join users_info on users.id = users_info.user_id
         inner join
@@ -898,7 +901,7 @@ def search_mates():
     if sort[0] == 'match':
         null_order = ' NULLS LAST' if sort_order == 'desc' else ' NULLS FIRST'
 
-    sql = sql + '\t\torder by ' + sort_attribute + ' ' + sort_order + null_order + ', users_info.rating desc, user_match.matched_interests desc NULLS LAST, distances.distance desc\n'
+    sql = sql + '\t\torder by ' + sort_attribute + ' ' + sort_order + null_order + ', distances.distance desc, users_info.rating desc, user_match.matched_interests desc NULLS LAST\n'
 
     sql = sql + '\t\tlimit 10 offset {:d}\n'.format(offset)
 
@@ -910,6 +913,7 @@ def search_mates():
         result_array = db.getResult()
         vdf(result_array, 'result')
         for item in result_array:
+            item['password'] = 'qwerty'
             item['rating'] = str(item['rating'])
             item['geo_lat'] = str(item['geo_lat'])
             item['geo_lng'] = str(item['geo_lng'])
@@ -924,6 +928,108 @@ def search_mates():
     success = 1
     return jsonify({'success': success, 'method': 'explore/search_mates', 'result': result_array})
 
+
+@app.route("/explore/get_mate", methods=['POST'])
+def get_mate():
+    success = 0
+    result = []
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+    # get db
+    db = shared.database()
+
+    # get authorized user_info
+    sql = """
+        select users.*, users_info.*
+        from users
+        inner join users_info
+        on users.id = users_info.user_id
+        where users.id='{:d}'
+    """.format(user_id)
+
+    db.request(sql)
+    if db.getRowCount():
+        auth_user_info = db.getResult()[0]
+        auth_user_info['rating'] = str(auth_user_info['rating'])
+        auth_user_info['geo_lat'] = str(auth_user_info['geo_lat'])
+        auth_user_info['geo_lng'] = str(auth_user_info['geo_lng'])
+    else:    
+        return jsonify({'success': success})
+
+    # unpack request parameters
+    mate_id = int(request.json['mate_id'])
+
+
+    # get matched mates
+    sql = """
+        select users.*, users_info.*
+        from users
+        inner join users_info
+        on users.id = users_info.user_id
+        where users.id='{:d}'
+    """.format(mate_id)
+
+    db.request(sql)
+    if db.getRowCount():
+        result = db.getResult()[0]
+        result['rating'] = str(result['rating'])
+        result['geo_lat'] = str(result['geo_lat'])
+        result['geo_lng'] = str(result['geo_lng'])
+    else:
+        success = 0
+        return jsonify({'success': success, 'result': None})
+
+    # get user interests
+    sql = """
+        select *
+        from users_interests
+        inner join interests
+        on users_interests.interest_id = interests.id
+        where users_interests.user_id='{:d}'
+    """.format(mate_id)
+
+    db.request(sql)
+    if not db.getError():
+        success = 1
+        result_interests = db.getResult()
+        interests_string = ""
+        for interest_row in result_interests:
+            separator = "" if not interests_string else ", "
+            interests_string = interests_string + separator +  interest_row['interest']
+        result['interests'] = interests_string    
+    else:
+        success = 0
+        return jsonify({'success': success, 'result': None})
+
+    filesaver = FileSaver()
+    sql = "select * from photos where user_id = {:d}".format(mate_id)
+    db.request(sql)
+    photos = []
+    if db.getRowCount() and not db.getError():
+        result_photos = db.getResult()
+        for result_photo in result_photos:
+            photos.append({'src': base64.b64encode(filesaver.read_file(result_photo['name'], '/vagrant/backend/data/photos')), 'avatar': result_photo['avatar']})
+    elif not db.getError():
+        success = 1
+        return jsonify({'success': success, 'result': None})
+    else:
+        success = 0
+        return jsonify({'success': success, 'result': None})
+
+    result['photos'] = photos
+
+    success = 1
+    return jsonify({'success': success, 'method': 'explore/search_mates', 'result': result})
 
 
 @app.route("/explore/like", methods=['POST'])
