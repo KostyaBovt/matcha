@@ -960,9 +960,9 @@ def get_mate():
     db.request(sql)
     if db.getRowCount():
         auth_user_info = db.getResult()[0]
-        auth_user_info['rating'] = str(auth_user_info['rating'])
-        auth_user_info['geo_lat'] = str(auth_user_info['geo_lat'])
-        auth_user_info['geo_lng'] = str(auth_user_info['geo_lng'])
+        auth_user_info['rating'] = float(auth_user_info['rating'])
+        auth_user_info['geo_lat'] = float(auth_user_info['geo_lat'])
+        auth_user_info['geo_lng'] = float(auth_user_info['geo_lng'])
     else:    
         return jsonify({'success': success})
 
@@ -970,21 +970,24 @@ def get_mate():
     mate_id = int(request.json['mate_id'])
 
 
-    # get matched mates
+    # get info of mate
     sql = """
-        select users.*, users_info.*
+        select users.*, users_info.*, date_part('year', AGE(users_info.birth)) as "age", login.last_seen,
+            CASE WHEN login.last_seen > NOW() - INTERVAL '15 minutes' THEN 1
+                 ELSE 0
+            END as online_status
         from users
-        inner join users_info
-        on users.id = users_info.user_id
+        left join login on users.id = login.user_id
+        inner join users_info on users.id = users_info.user_id
         where users.id='{:d}'
     """.format(mate_id)
 
     db.request(sql)
     if db.getRowCount():
         result = db.getResult()[0]
-        result['rating'] = str(result['rating'])
-        result['geo_lat'] = str(result['geo_lat'])
-        result['geo_lng'] = str(result['geo_lng'])
+        result['rating'] = float(result['rating'])
+        result['geo_lat'] = float(result['geo_lat'])
+        result['geo_lng'] = float(result['geo_lng'])
     else:
         success = 0
         return jsonify({'success': success, 'result': None})
@@ -1011,14 +1014,18 @@ def get_mate():
         success = 0
         return jsonify({'success': success, 'result': None})
 
+    # get mates photos and avatar
     filesaver = FileSaver()
     sql = "select * from photos where user_id = {:d}".format(mate_id)
     db.request(sql)
     photos = []
+    avatar = ''
     if db.getRowCount() and not db.getError():
         result_photos = db.getResult()
         for result_photo in result_photos:
-            photos.append({'src': base64.b64encode(filesaver.read_file(result_photo['name'], '/vagrant/backend/data/photos')), 'avatar': result_photo['avatar']})
+            photos.append({'src': base64.b64encode(filesaver.read_file(result_photo['name'], '/vagrant/backend/data/photos'))})
+            if result_photo['avatar'] == 1:
+                avatar = {'src': base64.b64encode(filesaver.read_file(result_photo['name'], '/vagrant/backend/data/photos'))}
     elif not db.getError():
         success = 1
         return jsonify({'success': success, 'result': None})
@@ -1027,6 +1034,27 @@ def get_mate():
         return jsonify({'success': success, 'result': None})
 
     result['photos'] = photos
+    result['avatar'] = avatar
+    import math
+    result['distance'] = 2 * 3961 * math.asin(math.sqrt((math.sin(math.radians((result['geo_lat'] - auth_user_info['geo_lat']) / 2))) ** 2 + math.cos(math.radians(auth_user_info['geo_lat'])) * math.cos(math.radians(result['geo_lat'])) * (math.sin(math.radians((result['geo_lng'] - auth_user_info['geo_lng']) / 2))) ** 2))
+
+    #get actions (like, disllike) of user
+    sql = 'select * from likes where user_id_1={:d} and user_id_2={:d}'.format(user_id, mate_id)
+    db.request(sql)
+    if db.getRowCount():
+        actions_result = db.getResult()[0]
+        result['action_of_user'] = actions_result['action']
+    else:
+        result['action_of_user'] = None
+
+    #get actions (like, disllike) to user
+    sql = 'select * from likes where user_id_1={:d} and user_id_2={:d}'.format(mate_id, user_id)
+    db.request(sql)
+    if db.getRowCount():
+        actions_result = db.getResult()[0]
+        result['action_to_user'] = actions_result['action']
+    else:
+        result['action_to_user'] = None
 
     success = 1
     return jsonify({'success': success, 'method': 'explore/search_mates', 'result': result})
@@ -1035,7 +1063,7 @@ def get_mate():
 @app.route("/explore/like", methods=['POST'])
 def like():
     success = 0
-    result = []
+    result = {}
 
     # authorize
     token = request.json['token']
@@ -1074,13 +1102,26 @@ def like():
         db.request(sql, False)
         success = 1
 
-    return jsonify({'success': success, 'method': 'explore/like'})
+    # update action of mate (if he perofrmed action during profile view)    
+    sql = """
+        select action
+        from likes
+        where user_id_1={:d}
+        and user_id_2={:d}
+    """.format(mate_id, user_id)
+    db.request(sql)
+    if db.getRowCount():
+        result['action_to_user'] = db.getResult()[0]['action']
+    else: 
+        result['action_to_user'] = None
+
+    return jsonify({'success': success, 'method': 'explore/like', 'result': result})
 
 
 @app.route("/explore/dislike", methods=['POST'])
 def dislike():
     success = 0
-    result = []
+    result = {}
 
     # authorize
     token = request.json['token']
@@ -1107,7 +1148,7 @@ def dislike():
         and user_id_2={:d}
     """.format(user_id, mate_id)
 
-    # actions: 1 - like, 2 - dislike
+    # actions: 1 - like, 2 - dislike,  3 - report
     db.request(sql)
     if db.getRowCount():
         # just update action
@@ -1119,13 +1160,26 @@ def dislike():
         db.request(sql, False)
         success = 1
 
-    return jsonify({'success': success, 'method': 'explore/dislike'})
+    # update action of mate (if he perofrmed action during profile view)    
+    sql = """
+        select action
+        from likes
+        where user_id_1={:d}
+        and user_id_2={:d}
+    """.format(mate_id, user_id)
+    db.request(sql)
+    if db.getRowCount():
+        result['action_to_user'] = db.getResult()[0]['action']
+    else: 
+        result['action_to_user'] = None
+
+    return jsonify({'success': success, 'method': 'explore/dislike', 'result': result})
 
 
 @app.route("/explore/unlike", methods=['POST'])
 def unlike():
     success = 0
-    result = []
+    result = {}
 
     # authorize
     token = request.json['token']
@@ -1163,7 +1217,20 @@ def unlike():
         # nothing to unlike
         success = 1
 
-    return jsonify({'success': success, 'method': 'explore/unlike'})
+    # update action of mate (if he perofrmed action during profile view)    
+    sql = """
+        select action
+        from likes
+        where user_id_1={:d}
+        and user_id_2={:d}
+    """.format(mate_id, user_id)
+    db.request(sql)
+    if db.getRowCount():
+        result['action_to_user'] = db.getResult()[0]['action']
+    else: 
+        result['action_to_user'] = None
+
+    return jsonify({'success': success, 'method': 'explore/unlike', 'result': result})
 
 
 

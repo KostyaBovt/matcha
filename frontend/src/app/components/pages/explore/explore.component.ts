@@ -44,6 +44,7 @@ export class ExploreComponent implements OnInit {
   account_shown: boolean = false;
   account_shown_id: number = null;
   account_info: Object = {};
+  current_main_photo: string = '';
 
   constructor(private http: HttpClient, private profileService: ProfileService, private exploreService: ExploreService) { }
 
@@ -165,22 +166,69 @@ export class ExploreComponent implements OnInit {
     this.searchMates();
   }
 
+////////// ############### this part is for mate account view
+
   showAccount(mate_id) {
-    this.account_shown = true;
-    this.account_shown_id = mate_id;
     this.exploreService.getMate(mate_id).subscribe(response => {
         if (response['success'] == 1) {
             console.log(response);
+            this.account_shown = true;
+            this.account_shown_id = mate_id;
             this.account_info = response['result'];
+            this.current_main_photo = this.account_info['avatar']['src'];
         } else {
           alert('some error');
         }
     });
   }
 
+  changeMainPhoto(src) {
+    this.current_main_photo = src;
+  }
+
   closeAccount() {
     this.account_shown = false;
     this.account_shown_id = null;
     this.account_info = {};
+  }
+
+  likeFromAccount(mate_id) {
+    alert('likeFromAccount');
+    this.exploreService.like(mate_id).subscribe(response => {
+        if (response['success'] == 1) {
+          console.log(response);
+          this.updateActions(1, response['result']['action_to_user']);
+        } else {
+          alert('some error');
+        }
+    });
+  }
+
+  unlikeFromAccount(mate_id) {
+    alert('unlikeFromAccount');
+    this.exploreService.unlike(mate_id).subscribe(response => {
+        if (response['success'] == 1) {
+          console.log(response);
+          this.updateActions(null, response['result']['action_to_user']);
+        } else {
+          alert('some error');
+        }
+    });
+  }
+
+  dislikeFromAccount(mate_id) {
+    alert('dislikeFromAccount');
+  }
+
+  reportFromAccount(mate_id) {
+    if (!confirm("you really wnat to report this user? you will not able to conntact him/her anymore!")) {
+    } else {
+      alert('reportFromAccount');
+    }
+  }
+
+  updateActions(action_of_user, action_to_user) {
+    this.account_info['action_of_user'] = action_of_user;
+    this.account_info['action_to_user'] = action_to_user;
   }
 }

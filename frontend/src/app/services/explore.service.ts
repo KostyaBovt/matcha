@@ -18,12 +18,23 @@ export class ExploreService {
   }
 
   like(mate_id) {
-  	let args = {'mate_id': mate_id}
-  	return this.apiService.request('explore/like', args);
+    let args = {'mate_id': mate_id}
+    return this.apiService.request('explore/like', args);
+  }
+
+  unlike(mate_id) {
+    let args = {'mate_id': mate_id}
+    return this.apiService.request('explore/unlike', args);
   }
 
   dislike(mate_id) {
   	let args = {'mate_id': mate_id}
   	return this.apiService.request('explore/dislike', args);
   }
+
+  report(mate_id) {
+    let args = {'mate_id': mate_id}
+    return this.apiService.request('explore/report', args);
+  }
+
 }
