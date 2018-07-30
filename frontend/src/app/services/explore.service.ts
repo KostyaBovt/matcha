@@ -10,6 +10,10 @@ export class ExploreService {
     return this.apiService.request('explore/search_mates', args);
   }
 
+  searchConnections(args) {
+    return this.apiService.request('explore/search_connections', args);
+  }
+
   getMate(mate_id) {
     let args = {
       'mate_id': mate_id
@@ -28,8 +32,13 @@ export class ExploreService {
   }
 
   dislike(mate_id) {
-  	let args = {'mate_id': mate_id}
-  	return this.apiService.request('explore/dislike', args);
+    let args = {'mate_id': mate_id}
+    return this.apiService.request('explore/dislike', args);
+  }
+
+  undislike(mate_id) {
+    let args = {'mate_id': mate_id}
+    return this.apiService.request('explore/undislike', args);
   }
 
   report(mate_id) {

@@ -190,10 +190,10 @@ export class ExploreComponent implements OnInit {
     this.account_shown = false;
     this.account_shown_id = null;
     this.account_info = {};
+    this.searchMates();
   }
 
   likeFromAccount(mate_id) {
-    alert('likeFromAccount');
     this.exploreService.like(mate_id).subscribe(response => {
         if (response['success'] == 1) {
           console.log(response);
@@ -205,7 +205,6 @@ export class ExploreComponent implements OnInit {
   }
 
   unlikeFromAccount(mate_id) {
-    alert('unlikeFromAccount');
     this.exploreService.unlike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
           console.log(response);
@@ -217,18 +216,36 @@ export class ExploreComponent implements OnInit {
   }
 
   dislikeFromAccount(mate_id) {
-    alert('dislikeFromAccount');
+    this.exploreService.dislike(mate_id).subscribe(response => {
+        if (response['success'] == 1) {
+          console.log(response);
+          this.updateActions(2, response['result']['action_to_user']);
+        } else {
+          alert('some error');
+        }
+    });
   }
 
   reportFromAccount(mate_id) {
     if (!confirm("you really wnat to report this user? you will not able to conntact him/her anymore!")) {
     } else {
-      alert('reportFromAccount');
+      this.exploreService.report(mate_id).subscribe(response => {
+          if (response['success'] == 1) {
+            console.log(response);
+            this.updateActions(3, response['result']['action_to_user']);
+          } else {
+            alert('some error');
+          }
+      });
     }
   }
 
   updateActions(action_of_user, action_to_user) {
     this.account_info['action_of_user'] = action_of_user;
     this.account_info['action_to_user'] = action_to_user;
+  }
+
+  goToMessages(mate_id) {
+    alert('no we go to messages')
   }
 }

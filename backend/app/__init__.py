@@ -905,13 +905,13 @@ def search_mates():
 
     sql = sql + '\t\tlimit 10 offset {:d}\n'.format(offset)
 
-    vdf(sql, 'sql')
+    # vdf(sql, 'sql')
 
     filesaver = FileSaver()
     db.request(sql)
     if db.getRowCount() and not db.getError():
         result_array = db.getResult()
-        vdf(result_array, 'result')
+        # vdf(result_array, 'result')
         for item in result_array:
             item['password'] = 'qwerty'
             item['rating'] = str(item['rating'])
@@ -927,6 +927,188 @@ def search_mates():
 
     success = 1
     return jsonify({'success': success, 'method': 'explore/search_mates', 'result': result_array})
+
+@app.route("/explore/search_connections", methods=['POST'])
+def search_connections():
+    success = 0
+    result = []
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+    # get db
+    db = shared.database()
+
+    # get authorized user_info
+    sql = """
+        select users.*, users_info.*
+        from users
+        inner join users_info
+        on users.id = users_info.user_id
+        where users.id='{:d}'
+    """.format(user_id)
+
+    db.request(sql)
+    if db.getRowCount():
+        auth_user_info = db.getResult()[0]
+        auth_user_info['rating'] = str(auth_user_info['rating'])
+        auth_user_info['geo_lat'] = str(auth_user_info['geo_lat'])
+        auth_user_info['geo_lng'] = str(auth_user_info['geo_lng'])
+    else:    
+        return jsonify({'success': success})
+
+    # unpack request parameters
+    interests = request.json['interests']
+    sort = request.json['sort']
+    sort = sort.split('_')
+    bottomAge = int(request.json['bottomAge'])
+    upperAge = int(request.json['upperAge'])
+    bottomRating = float(request.json['bottomRating'])
+    upperRating = float(request.json['upperRating'])
+    woman = request.json['woman']
+    man = request.json['man']
+    online = request.json['online']
+    radius = float(request.json['radius'])
+    offset = (int(request.json['page']) - 1) * 10
+    i_like = request.json['i_like']
+    i_dislike = request.json['i_dislike']
+    like_me = request.json['like_me']
+
+    split_interests = [x.strip('\'\" ') for x in interests.split(',')]
+    split_interests = [x for x in split_interests if x]
+
+    inline_interests = "('some_blank_interest_to_avoid_error'"
+    counter = 1
+    for interest in split_interests:
+        delimiter = ''
+        if counter:
+            delimiter = ', '
+        inline_interests = inline_interests + delimiter + "'" + interest + "'"
+        counter = counter + 1
+    inline_interests = inline_interests + ')'
+
+    # vdf(split_interests, 'split_interests')
+    # vdf(inline_interests, 'inline_interests')
+
+    # vdf(request.json, 'request')
+
+
+    # get matched mates
+    sql = """
+        select users.*, users_info.*, user_match.matched_interests, distances.distance, date_part('year', AGE(users_info.birth)) as "age", avatars_table.avatar_name, online_table.last_seen,
+         CASE WHEN online_table.last_seen > NOW() - INTERVAL '15 minutes' THEN 1
+              ELSE 0
+         END as online_status
+        from users
+        inner join users_info on users.id = users_info.user_id
+        inner join
+            (select user_id, name as "avatar_name" 
+            from photos
+            where photos.avatar = 1) as avatars_table
+        on users.id=avatars_table.user_id
+        left join
+            (select user_id, last_seen from login
+            ) as online_table
+        on users.id=online_table.user_id
+        left join
+            (select user_id, count(interests.interest) as matched_interests 
+            from users_interests
+            inner join interests on users_interests.interest_id=interests.id
+            where interests.interest in {:s}
+            and not user_id={:d}
+            group by user_id) as user_match
+        on users.id=user_match.user_id
+        inner join
+            (select users_info.user_id, 2 * 3961 * asin(sqrt((sin(radians((users_info.geo_lat - {:s}) / 2))) ^ 2 + cos(radians({:s})) * cos(radians(users_info.geo_lat)) * (sin(radians((users_info.geo_lng - {:s}) / 2))) ^ 2)) as distance
+            from users_info
+            where not user_id={:d}
+            and users_info.geo_lat is not null
+            and users_info.geo_lng is not null
+            ) as distances
+        on users.id=distances.user_id
+        where not users.id={:d}
+        and not users.id in (select user_id_1 from likes where user_id_2={:d} and (action = 2 or action = 3))
+        and users_info.geo_lat is not null
+        and users_info.geo_lng is not null
+        and distance < {:f}\n""".format(inline_interests, user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, radius)
+
+    if (i_like):
+        sql = sql + '\t\tand users.id in (select user_id_2 from likes where user_id_1={:d} and action=1)\n'.format(user_id)
+
+    if (i_dislike):
+        sql = sql + '\t\tand users.id in (select user_id_2 from likes where user_id_1={:d} and action=2)\n'.format(user_id)
+
+    if (like_me):
+        sql = sql + '\t\tand users.id in (select user_id_1 from likes where user_id_2={:d} and action=1)\n'.format(user_id)
+
+    if (man and not woman):
+        sql = sql + '\t\tand users_info.gender=1\n'
+    if (woman and not man):
+        sql = sql + '\t\tand users_info.gender=2\n'
+
+    sql = sql + '\t\tand users_info.rating * 100 >= {:f}\n'.format(bottomRating)
+    sql = sql + '\t\tand users_info.rating * 100 <= {:f}\n'.format(upperRating)
+
+    sql = sql + '\t\tand EXTRACT(year from AGE(users_info.birth)) >= {:d}\n'.format(bottomAge)
+    sql = sql + '\t\tand EXTRACT(year from AGE(users_info.birth)) <= {:d}\n'.format(upperAge)
+
+    if online:
+        sql = sql + """\t\tand online_table.last_seen > NOW() - INTERVAL '15 minutes'\n"""
+
+    sort_mapping = {
+        'match': 'user_match.matched_interests',
+        'age': 'users_info.birth',
+        'rating': 'users_info.rating',
+        'dist': 'distances.distance'
+    }
+
+    sort_attribute = sort_mapping[sort[0]]
+    sort_order = sort[1]
+    if sort[0] == 'age':
+        if sort_order =='asc':
+            sort_order = 'desc'
+        else:
+            sort_order = 'asc'
+
+    null_order = ''
+    if sort[0] == 'match':
+        null_order = ' NULLS LAST' if sort_order == 'desc' else ' NULLS FIRST'
+
+    sql = sql + '\t\torder by ' + sort_attribute + ' ' + sort_order + null_order + ', distances.distance desc, users_info.rating desc, user_match.matched_interests desc NULLS LAST\n'
+
+    sql = sql + '\t\tlimit 10 offset {:d}\n'.format(offset)
+
+    # vdf(sql, 'sql')
+
+    filesaver = FileSaver()
+    db.request(sql)
+    if db.getRowCount() and not db.getError():
+        result_array = db.getResult()
+        # vdf(result_array, 'result')
+        for item in result_array:
+            item['password'] = 'qwerty'
+            item['rating'] = str(item['rating'])
+            item['geo_lat'] = str(item['geo_lat'])
+            item['geo_lng'] = str(item['geo_lng'])
+            item['avatar_src'] = base64.b64encode(filesaver.read_file(item['avatar_name'], '/vagrant/backend/data/photos'))
+    elif not db.getError():
+        success = 1
+        return jsonify({'success': success, 'result': None})
+    else:
+        success = 0
+        return jsonify({'success': success, 'result': None})
+
+    success = 1
+    return jsonify({'success': success, 'method': 'explore/search_mates', 'result': result_array})
+
 
 
 @app.route("/explore/get_mate", methods=['POST'])
@@ -1026,10 +1208,7 @@ def get_mate():
             photos.append({'src': base64.b64encode(filesaver.read_file(result_photo['name'], '/vagrant/backend/data/photos'))})
             if result_photo['avatar'] == 1:
                 avatar = {'src': base64.b64encode(filesaver.read_file(result_photo['name'], '/vagrant/backend/data/photos'))}
-    elif not db.getError():
-        success = 1
-        return jsonify({'success': success, 'result': None})
-    else:
+    elif db.getError():
         success = 0
         return jsonify({'success': success, 'result': None})
 
@@ -1055,6 +1234,10 @@ def get_mate():
         result['action_to_user'] = actions_result['action']
     else:
         result['action_to_user'] = None
+
+    # finally log this action in notification table
+    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 4)
+    db.request(sql, False)
 
     success = 1
     return jsonify({'success': success, 'method': 'explore/search_mates', 'result': result})
@@ -1115,6 +1298,10 @@ def like():
     else: 
         result['action_to_user'] = None
 
+    # finally log this action in notification table
+    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 1)
+    db.request(sql, False)
+
     return jsonify({'success': success, 'method': 'explore/like', 'result': result})
 
 
@@ -1173,6 +1360,10 @@ def dislike():
     else: 
         result['action_to_user'] = None
 
+    # finally log this action in notification table
+    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 2)
+    db.request(sql, False)
+
     return jsonify({'success': success, 'method': 'explore/dislike', 'result': result})
 
 
@@ -1204,13 +1395,14 @@ def unlike():
         from likes
         where user_id_1={:d}
         and user_id_2={:d}
+        and action=1
     """.format(user_id, mate_id)
 
     # actions: 1 - like, 2 - dislike
     db.request(sql)
     if db.getRowCount():
         # just update action
-        sql = 'delete from likes where user_id_1={:d} and user_id_2={:d}'.format(user_id, mate_id)
+        sql = 'delete from likes where user_id_1={:d} and user_id_2={:d} and action=1'.format(user_id, mate_id)
         db.request(sql)
         success = 1
     else:
@@ -1230,7 +1422,134 @@ def unlike():
     else: 
         result['action_to_user'] = None
 
+    # finally log this action in notification table
+    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 5)
+    db.request(sql, False)
+
     return jsonify({'success': success, 'method': 'explore/unlike', 'result': result})
 
 
+@app.route("/explore/undislike", methods=['POST'])
+def undislike():
+    success = 0
+    result = {}
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    mate_id = request.json['mate_id']
+
+    # get db
+    db = shared.database()
+
+    # get authorized user_info action
+    sql = """
+        select *
+        from likes
+        where user_id_1={:d}
+        and user_id_2={:d}
+        and action=2
+    """.format(user_id, mate_id)
+
+    # actions: 1 - like, 2 - dislike
+    db.request(sql)
+    if db.getRowCount():
+        # just update action
+        sql = 'delete from likes where user_id_1={:d} and user_id_2={:d} and actions=2'.format(user_id, mate_id)
+        db.request(sql)
+        success = 1
+    else:
+        # nothing to undislike
+        success = 1
+
+    # update action of mate (if he perofrmed action during profile view)    
+    sql = """
+        select action
+        from likes
+        where user_id_1={:d}
+        and user_id_2={:d}
+    """.format(mate_id, user_id)
+    db.request(sql)
+    if db.getRowCount():
+        result['action_to_user'] = db.getResult()[0]['action']
+    else: 
+        result['action_to_user'] = None
+
+    # finally log this action in notification table
+    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 6)
+    db.request(sql, False)
+
+    return jsonify({'success': success, 'method': 'explore/unlike', 'result': result})
+
+
+
+@app.route("/explore/report", methods=['POST'])
+def report():
+    success = 0
+    result = {}
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    mate_id = request.json['mate_id']
+
+    # get db
+    db = shared.database()
+
+    # get authorized user_info
+    sql = """
+        select *
+        from likes
+        where user_id_1={:d}
+        and user_id_2={:d}
+    """.format(user_id, mate_id)
+
+    # actions: 1 - like, 2 - dislike,  3 - report
+    db.request(sql)
+    if db.getRowCount():
+        # just update action
+        sql = 'update likes set action=3 where user_id_1={:d} and user_id_2={:d}'.format(user_id, mate_id)
+        db.request(sql)
+        success = 1
+    else:
+        sql = 'insert into likes (user_id_1, user_id_2, action) values ({:d}, {:d}, 3)'.format(user_id, mate_id)
+        db.request(sql, False)
+        success = 1
+
+    # update action of mate (if he perofrmed action during profile view)    
+    sql = """
+        select action
+        from likes
+        where user_id_1={:d}
+        and user_id_2={:d}
+    """.format(mate_id, user_id)
+    db.request(sql)
+    if db.getRowCount():
+        result['action_to_user'] = db.getResult()[0]['action']
+    else: 
+        result['action_to_user'] = None
+
+    # finally log this action in notification table
+    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 4)
+    db.request(sql, False)
+
+    return jsonify({'success': success, 'method': 'explore/report', 'result': result})
 

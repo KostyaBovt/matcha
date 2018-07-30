@@ -1,3 +1,160 @@
-<p>
-  connections works!
-</p>
+<div *ngIf="!account_shown" class="row matelist">
+	<div class="col-sm-4">
+		<form  #exploreForm="ngForm" (ngSubmit)="searchConnectionsInitial()">
+			<div><h6>SEARCH FILTERS:</h6></div>
+			<div class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="man" [checked]="man" (change)="man = !man">
+			  <label class="form-check-label" for="inlineCheckbox1">Man</label>
+			</div>
+			<div class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="woman" [checked]="woman" (change)="woman = !woman">
+			  <label class="form-check-label" for="inlineCheckbox2">Woman</label>
+			</div>
+
+		    <div class="form-group">
+		      <label >Bottom Age:  {{bottomAge}}</label>
+		      <input value="{{bottomAge}}" type="range" min="18" max="100" class="form-control-range" #rangerBottomAge (input)="setBottomAge(rangerBottomAge.value)">
+		    </div>
+		    <div class="form-group">
+		      <label >Upper Age:  {{upperAge}}</label>
+		      <input value="{{upperAge}}" type="range" min="18" max="100" class="form-control-range" #rangerUpperAge (input)="setUpperAge(rangerUpperAge.value)">
+		    </div>
+
+		    <div class="form-group">
+		      <label for="formControlRange">Bottom Rating:  {{bottomRating}}</label>
+		      <input value="0" type="range" min="0" max="100" class="form-control-range" #rangerBottomRating (input)="setBottomRating(rangerBottomRating.value)">
+		    </div>
+		    <div class="form-group">
+		      <label for="formControlRange">Upper Rating:  {{upperRating}}</label>
+		      <input value="100" type="range" min="0" max="100" class="form-control-range" #rangerUpperRating (input)="setUpperRating(rangerUpperRating.value)">
+		    </div>
+
+			<div class="form-group">
+				<div>Interests</div>
+				<div><textarea class="form-control" name="interests" type="text" [(ngModel)]="interests"></textarea></div>
+			</div>
+
+		    <div class="form-group">
+		      <label for="formControlRange">Radius:  {{radius}} km</label>
+		      <input value="50" type="range" min="1" max="100" class="form-control-range" #rangerRadius (input)="setRadius(rangerRadius.value)">
+		    </div>
+
+
+			<div class="form-group row">
+				<div class="col-sm-5">Sort by:</div>
+				<div class="col-sm-7">
+					<select class="form-control" [(ngModel)]="sort" name="sort">
+						<option *ngFor="let sort_list_item of sort_list" [value]="sort_list_item.value">{{sort_list_item.name}} <span *ngIf="sort_list_item.order == 'asc'">&uarr;</span> <span *ngIf="sort_list_item.order == 'desc'">&darr;</span></option>
+					</select>
+				</div>
+			</div>
+			<div class="form-check">
+			  <input class="form-check-input" type="checkbox" id="online" [checked]="online" (change)="online = !online">
+			  <label class="form-check-label" for="inlineCheckbox1">Only online users</label>
+			</div>
+
+			<div class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="online" [checked]="i_like" (change)="manageILikeFlagChange()">
+			  <label class="form-check-label" for="inlineCheckbox1">I liked</label>
+			</div>
+			<div class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="online" [checked]="like_me" (change)="like_me = !like_me">
+			  <label class="form-check-label" for="inlineCheckbox1">Liked me</label>
+			</div>
+			<div class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="online" [checked]="i_dislike" (change)="manageIDislikeFlagChange()">
+			  <label class="form-check-label" for="inlineCheckbox1">I disliked</label>
+			</div>
+			<div>
+				<button type="submit" class="btn">Search</button>
+			</div>
+
+
+		</form>
+	</div>
+	<div class="col-sm-8">
+		<div>
+			<h6 class="d-sm-inline-block">SEARCH RESULTS:</h6>
+			<div *ngIf="finded_mates.length > 0 || page > 1" class="d-sm-inline-block paginator">
+				<button type="button" class="btn btn-primary" (click)="prevPage()" [disabled]="page == 1">Prev</button>
+				Page: {{page}}
+				<button type="button" class="btn btn-primary" (click)="nextPage()" >Next</button>
+			</div>
+		</div>
+		<div class="mate" *ngFor="let mate of finded_mates">
+			<div class="row">
+				<div class="col-sm-3">
+					<div class="photo">
+						<img class="fitdiv" src="data:image/jpeg;base64,{{mate.avatar_src}}">
+						<div *ngIf="mate.online_status"> online </div>
+						<div *ngIf="!mate.online_status"> offline </div>
+						<div> id: {{mate.user_id}} </div>
+					</div>
+				</div>
+				<div class="col-sm-5">
+					<h4>{{mate.username}}, {{mate.age }} <span *ngIf="mate.gender == 1">&#9794;</span> <span *ngIf="mate.gender  == 2">&#9793;</span></h4>
+					<h5>{{mate.fname}} {{mate.sname}}</h5>
+					<h6>Distance: {{mate.distance | number:'1.1-1'}} km</h6>
+					<h6>Match: <span *ngIf="!mate.matched_interests">0</span>{{mate.matched_interests}}</h6>
+					<h6>Rating: {{mate.rating * 100 | number:'2.1-1'}}%</h6>
+				</div>
+				<div class="col-sm-4">
+					<button type="button" class="btn btn-info" (click)="showAccount(mate.user_id)" >Show</button>	
+					<button type="button" class="btn btn-success" (click)="like(mate.user_id)" >Like</button>	
+					<button type="button" class="btn btn-danger" (click)="dislike(mate.user_id)" >Dislike</button>	
+				</div>
+			</div>
+		</div>
+		<div>
+			<!-- <h6 class="d-sm-inline-block">SEARCH RESULTS:</h6> -->
+			<div *ngIf="finded_mates.length > 0" class="d-sm-inline-block paginator">
+				<button type="button" class="btn btn-primary" (click)="prevPage()" [disabled]="page == 1">Prev</button>
+				Page: {{page}}
+				<button type="button" class="btn btn-primary" (click)="nextPage()" >Next</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div *ngIf="account_shown" class="row account-info">
+	<div class="col-sm-6">
+		<div class="photo-avatar" >
+			<img class="fitdiv" src="data:image/jpeg;base64,{{current_main_photo}}">
+		</div>
+		<div class="photo-small-avatar" *ngFor="let photo of account_info.photos">
+			<img class="fitdiv" src="data:image/jpeg;base64,{{photo.src}}" (click)="changeMainPhoto(photo.src)">
+		</div>
+	</div>
+	<div class="col-sm-6">
+			<button type="button" class="btn btn-danger" (click)="closeAccount()" >Close</button>
+			<h4>{{account_info.username}}, {{account_info.age }} <span *ngIf="account_info.gender == 1">&#9794;</span> <span *ngIf="account_info.gender  == 2">&#9793;</span></h4>
+			<div *ngIf="account_info.online_status"> online </div>
+			<div *ngIf="!account_info.online_status"> offline </div>
+			<div *ngIf="!account_info.online_status"> last seen: {{account_info.last_seen | date : 'medium' }} </div>
+			<h5>{{account_info.fname}} {{account_info.sname}}</h5>
+			<h6>Distance: {{account_info.distance | number:'1.1-1'}} km</h6>
+			<h6>Rating: {{account_info.rating * 100 | number:'2.1-1'}}%</h6>
+			<h6>Sex preference: <span *ngIf="account_info.sex_preference == 1">&#9794;</span> <span *ngIf="account_info.sex_preference  == 2">&#9793;</span> <span *ngIf="account_info.sex_preference  == 3">&#9794; and &#9793;</span></h6>
+			<h5>Interests:</h5>
+			<h6>{{account_info.interests}}</h6>
+			<h5>Bio:</h5>
+			<h6>{{account_info.bio}}</h6>
+			<div *ngIf="!account_info.action_of_user && !account_info.action_to_user" class="alert alert-secondary" role="alert"> No actions between you. Make first step!</div>
+
+			<div *ngIf="account_info.action_of_user == 1 && account_info.action_to_user == 1" class="alert alert-success" role="alert"> You are connencted! you liked each other</div>
+			<div *ngIf="account_info.action_of_user == 1 && account_info.action_to_user != 1" class="alert alert-warning" role="alert">You liked this person. Waiting for mutual like</div>
+			<div *ngIf="account_info.action_of_user != 1 && account_info.action_to_user == 1" class="alert alert-info" role="alert">This person liked you. Waiting for your action</div>
+
+			<div *ngIf="account_info.action_of_user == 2" class="alert alert-danger" role="alert"> You disliked this person. You will not see he/she in search anymore</div>
+			<div *ngIf="account_info.action_to_user == 2" class="alert alert-danger" role="alert"> This person disliked you. You will not see he/she in search anymore</div>
+			<div *ngIf="account_info.action_of_user == 3" class="alert alert-danger" role="alert"> You reported this person. You will not see he/she anewhere anymore and no actions aviable</div>
+			<div *ngIf="account_info.action_to_user == 3" class="alert alert-danger" role="alert"> This person reported you. You will not see he/she anewhere anymore and no actions aviable</div>
+<!-- 			<div class="alert alert-dark" role="alert"> You disliked this person</div>-->
+
+			<button *ngIf="account_info.action_of_user == 1 && account_info.action_to_user == 1" type="button" class="btn btn-success" (click)="goToMessages(account_info.user_id)" >Message</button>
+			<button *ngIf="!account_info.action_of_user && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-success" (click)="likeFromAccount(account_info.user_id)" >Like</button>
+			<button *ngIf="account_info.action_of_user == 1 && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-secondary" (click)="unlikeFromAccount(account_info.user_id)" >UnLike</button>
+			<button *ngIf="account_info.action_of_user != 2 && account_info.action_of_user != 3" type="button" class="btn btn-danger" (click)="dislikeFromAccount(account_info.user_id)" >DisLike</button>
+			<button *ngIf="account_info.action_of_user != 3" type="button" class="btn btn-danger" (click)="reportFromAccount(account_info.user_id)" >REPORT!!!</button>
+	</div>
+</div>

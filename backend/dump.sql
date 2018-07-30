@@ -175,7 +175,25 @@ ALTER TABLE ONLY users_interests
 
 
 
--- crate table to store likes and dislikes
+-- crate table to store notifications for likes -1  and dislikes - 2, reports - 3 and visits - 4 unlike - 5
+DROP TABLE IF EXISTS notifications;
+
+CREATE TABLE notifications (
+  user_id_1 integer NOT NULL,
+  user_id_2 integer NOT NULL,
+  action integer NOT NULL,
+  action_time timestamp(0) DEFAULT now() NOT NULL
+);
+
+ALTER TABLE ONLY notifications
+    ADD CONSTRAINT notifications_user_id_1_fkey FOREIGN KEY (user_id_1) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY notifications
+    ADD CONSTRAINT notifications_user_id_2_fkey FOREIGN KEY (user_id_2) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+-- crate table to store likes - 1 and dislikes - 2, and reports - 3
 DROP TABLE IF EXISTS likes;
 
 CREATE TABLE likes (
@@ -192,6 +210,7 @@ ALTER TABLE ONLY likes
 
 ALTER TABLE ONLY likes
     ADD CONSTRAINT likes_user_id_2_fkey FOREIGN KEY (user_id_2) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
 
 
 -- create table for email update
