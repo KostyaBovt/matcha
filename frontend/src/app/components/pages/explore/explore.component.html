@@ -139,9 +139,11 @@
 <!-- 			<div class="alert alert-dark" role="alert"> You disliked this person</div>-->
 
 			<button *ngIf="account_info.action_of_user == 1 && account_info.action_to_user == 1" type="button" class="btn btn-success" (click)="goToMessages(account_info.user_id)" >Message</button>
-			<button *ngIf="!account_info.action_of_user && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-success" (click)="likeFromAccount(account_info.user_id)" >Like</button>
+
+			<button *ngIf="!account_info.action_of_user  && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-success" (click)="likeFromAccount(account_info.user_id)" >Like</button>
 			<button *ngIf="account_info.action_of_user == 1 && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-secondary" (click)="unlikeFromAccount(account_info.user_id)" >UnLike</button>
-			<button *ngIf="account_info.action_of_user != 2 && account_info.action_of_user != 3" type="button" class="btn btn-danger" (click)="dislikeFromAccount(account_info.user_id)" >DisLike</button>
-			<button *ngIf="account_info.action_of_user != 3" type="button" class="btn btn-danger" (click)="reportFromAccount(account_info.user_id)" >REPORT!!!</button>
+			<button *ngIf="!account_info.action_of_user  && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-danger" (click)="dislikeFromAccount(account_info.user_id)" >DisLike</button>
+			<button *ngIf="account_info.action_of_user == 2 && account_info.action_of_user != 3 && account_info.action_to_user != 3" type="button" class="btn btn-secondary" (click)="undislikeFromAccount(account_info.user_id)" >UnDisLike</button>
+			<button *ngIf="account_info.action_of_user != 3" type="button" class="btn btn-danger" (click)="reportFromAccount(account_info.user_id)" >REPORT FAKE!!!</button>
 	</div>
 </div>

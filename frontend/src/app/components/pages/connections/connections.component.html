@@ -50,20 +50,24 @@
 			</div>
 			<div class="form-check">
 			  <input class="form-check-input" type="checkbox" id="online" [checked]="online" (change)="online = !online">
-			  <label class="form-check-label" for="inlineCheckbox1">Only online users</label>
+			  <label class="form-check-label" for="online">Only online users</label>
 			</div>
 
-			<div class="form-check form-check-inline">
-			  <input class="form-check-input" type="checkbox" id="online" [checked]="i_like" (change)="manageILikeFlagChange()">
-			  <label class="form-check-label" for="inlineCheckbox1">I liked</label>
+			<div class="form-check form-check">
+			  <input class="form-check-input" type="checkbox" id="connections_flag" [checked]="connections_flag" (change)="manageConnectionsFlagChange()">
+			  <label class="form-check-label" for="connections_flag">Connections</label>
 			</div>
-			<div class="form-check form-check-inline">
-			  <input class="form-check-input" type="checkbox" id="online" [checked]="like_me" (change)="like_me = !like_me">
-			  <label class="form-check-label" for="inlineCheckbox1">Liked me</label>
+			<div class="form-check form-check">
+			  <input class="form-check-input" type="checkbox" id="i_like_flag" [checked]="i_like_flag" (change)="manageILikeFlagChange()">
+			  <label class="form-check-label" for="i_like_flag">Maked likes</label>
 			</div>
-			<div class="form-check form-check-inline">
-			  <input class="form-check-input" type="checkbox" id="online" [checked]="i_dislike" (change)="manageIDislikeFlagChange()">
-			  <label class="form-check-label" for="inlineCheckbox1">I disliked</label>
+			<div class="form-check form-check">
+			  <input class="form-check-input" type="checkbox" id="like_me_flag" [checked]="like_me_flag" (change)="manageLikeMeFlagChange()">
+			  <label class="form-check-label" for="like_me_flag">Received likes</label>
+			</div>
+			<div class="form-check form-check">
+			  <input class="form-check-input" type="checkbox" id="i_dislike_flag" [checked]="i_dislike_flag" (change)="manageIDisikeFlagChange()">
+			  <label class="form-check-label" for="i_dislike_flag">Maked dislikes</label>
 			</div>
 			<div>
 				<button type="submit" class="btn">Search</button>
@@ -100,8 +104,9 @@
 				</div>
 				<div class="col-sm-4">
 					<button type="button" class="btn btn-info" (click)="showAccount(mate.user_id)" >Show</button>	
-					<button type="button" class="btn btn-success" (click)="like(mate.user_id)" >Like</button>	
-					<button type="button" class="btn btn-danger" (click)="dislike(mate.user_id)" >Dislike</button>	
+					<button *ngIf="mate.action_of_user == 1" type="button" class="btn btn-secondary" (click)="unlike(mate.user_id)" >Unlike</button>	
+					<!-- <button type="button" class="btn btn-success" (click)="like(mate.user_id)" >Like</button>	 -->
+					<button *ngIf="mate.action_of_user == 2" type="button" class="btn btn-secondary" (click)="undislike(mate.user_id)" >Undislike</button>	
 				</div>
 			</div>
 		</div>
@@ -152,9 +157,11 @@
 <!-- 			<div class="alert alert-dark" role="alert"> You disliked this person</div>-->
 
 			<button *ngIf="account_info.action_of_user == 1 && account_info.action_to_user == 1" type="button" class="btn btn-success" (click)="goToMessages(account_info.user_id)" >Message</button>
-			<button *ngIf="!account_info.action_of_user && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-success" (click)="likeFromAccount(account_info.user_id)" >Like</button>
+
+			<button *ngIf="!account_info.action_of_user  && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-success" (click)="likeFromAccount(account_info.user_id)" >Like</button>
 			<button *ngIf="account_info.action_of_user == 1 && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-secondary" (click)="unlikeFromAccount(account_info.user_id)" >UnLike</button>
-			<button *ngIf="account_info.action_of_user != 2 && account_info.action_of_user != 3" type="button" class="btn btn-danger" (click)="dislikeFromAccount(account_info.user_id)" >DisLike</button>
-			<button *ngIf="account_info.action_of_user != 3" type="button" class="btn btn-danger" (click)="reportFromAccount(account_info.user_id)" >REPORT!!!</button>
+			<button *ngIf="!account_info.action_of_user  && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-danger" (click)="dislikeFromAccount(account_info.user_id)" >DisLike</button>
+			<button *ngIf="account_info.action_of_user == 2 && account_info.action_of_user != 3 && account_info.action_to_user != 3" type="button" class="btn btn-secondary" (click)="undislikeFromAccount(account_info.user_id)" >UnDisLike</button>
+			<button *ngIf="account_info.action_of_user != 3" type="button" class="btn btn-danger" (click)="reportFromAccount(account_info.user_id)" >REPORT FAKE!!!</button>
 	</div>
 </div>

@@ -226,6 +226,17 @@ export class ExploreComponent implements OnInit {
     });
   }
 
+  undislikeFromAccount(mate_id) {
+    this.exploreService.undislike(mate_id).subscribe(response => {
+        if (response['success'] == 1) {
+          console.log(response);
+          this.updateActions(null, response['result']['action_to_user']);
+        } else {
+          alert('some error');
+        }
+    });
+  }
+
   reportFromAccount(mate_id) {
     if (!confirm("you really wnat to report this user? you will not able to conntact him/her anymore!")) {
     } else {

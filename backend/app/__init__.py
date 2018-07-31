@@ -864,9 +864,10 @@ def search_mates():
         on users.id=distances.user_id
         where not users.id={:d}
         and not users.id in (select user_id_2 from likes where user_id_1={:d})
+        and not users.id in (select user_id_1 from likes where user_id_2={:d} and (action=2 or action=3))
         and users_info.geo_lat is not null
         and users_info.geo_lng is not null
-        and distance < {:f}\n""".format(inline_interests, user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, radius)
+        and distance < {:f}\n""".format(inline_interests, user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, user_id, radius)
 
     if (man and not woman):
         sql = sql + '\t\tand users_info.gender=1\n'
@@ -978,9 +979,10 @@ def search_connections():
     online = request.json['online']
     radius = float(request.json['radius'])
     offset = (int(request.json['page']) - 1) * 10
-    i_like = request.json['i_like']
-    i_dislike = request.json['i_dislike']
-    like_me = request.json['like_me']
+    i_like_flag = request.json['i_like_flag']
+    i_dislike_flag = request.json['i_dislike_flag']
+    like_me_flag = request.json['like_me_flag']
+    connections_flag = request.json['connections_flag']
 
     split_interests = [x.strip('\'\" ') for x in interests.split(',')]
     split_interests = [x for x in split_interests if x]
@@ -1003,7 +1005,7 @@ def search_connections():
 
     # get matched mates
     sql = """
-        select users.*, users_info.*, user_match.matched_interests, distances.distance, date_part('year', AGE(users_info.birth)) as "age", avatars_table.avatar_name, online_table.last_seen,
+        select users.*, users_info.*, user_match.matched_interests, distances.distance, date_part('year', AGE(users_info.birth)) as "age", avatars_table.avatar_name, online_table.last_seen, actions_table.action_of_user,
          CASE WHEN online_table.last_seen > NOW() - INTERVAL '15 minutes' THEN 1
               ELSE 0
          END as online_status
@@ -1018,6 +1020,10 @@ def search_connections():
             (select user_id, last_seen from login
             ) as online_table
         on users.id=online_table.user_id
+        left join
+            (select user_id_2, action as action_of_user from likes where user_id_1={:d}
+            ) as actions_table
+        on users.id=actions_table.user_id_2
         left join
             (select user_id, count(interests.interest) as matched_interests 
             from users_interests
@@ -1038,16 +1044,19 @@ def search_connections():
         and not users.id in (select user_id_1 from likes where user_id_2={:d} and (action = 2 or action = 3))
         and users_info.geo_lat is not null
         and users_info.geo_lng is not null
-        and distance < {:f}\n""".format(inline_interests, user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, radius)
+        and distance < {:f}\n""".format(user_id, inline_interests, user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, radius)
 
-    if (i_like):
-        sql = sql + '\t\tand users.id in (select user_id_2 from likes where user_id_1={:d} and action=1)\n'.format(user_id)
+    if (i_like_flag):
+        sql = sql + '\t\tand users.id in (select user_id_2 from likes where user_id_1={:d} and action=1 and not user_id_2 in (select user_id_1 from likes where user_id_2={:d}))\n'.format(user_id, user_id)
 
-    if (i_dislike):
+    if (i_dislike_flag):
         sql = sql + '\t\tand users.id in (select user_id_2 from likes where user_id_1={:d} and action=2)\n'.format(user_id)
 
-    if (like_me):
-        sql = sql + '\t\tand users.id in (select user_id_1 from likes where user_id_2={:d} and action=1)\n'.format(user_id)
+    if (like_me_flag):
+        sql = sql + """\t\tand users.id in (select user_id_1 from likes where user_id_2={:d} and action=1 and user_id_1 not in (select user_id_2 from likes where user_id_1={:d} and (action=2 or action=3 or action=1)))\n""".format(user_id, user_id)
+
+    if (connections_flag):
+        sql = sql + """and users.id in (select user_id_2 from likes where user_id_1={:d} and action=1 and user_id_2 in (select user_id_1 from likes where user_id_2={:d} and action=1))""".format(user_id, user_id)
 
     if (man and not woman):
         sql = sql + '\t\tand users_info.gender=1\n'
@@ -1464,7 +1473,7 @@ def undislike():
     db.request(sql)
     if db.getRowCount():
         # just update action
-        sql = 'delete from likes where user_id_1={:d} and user_id_2={:d} and actions=2'.format(user_id, mate_id)
+        sql = 'delete from likes where user_id_1={:d} and user_id_2={:d} and action=2'.format(user_id, mate_id)
         db.request(sql)
         success = 1
     else:

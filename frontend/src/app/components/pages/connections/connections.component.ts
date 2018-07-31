@@ -12,9 +12,10 @@ export class ConnectionsComponent implements OnInit {
   man: boolean = false;
   woman: boolean = false;
   online: boolean = false;
-  i_like: boolean = true;
-  like_me: boolean = true;
-  i_dislike: boolean = false;
+  connections_flag: boolean = true;
+  i_like_flag: boolean = false;
+  like_me_flag: boolean = false;
+  i_dislike_flag: boolean = false;
 
   bottomAge: number = 18;
   upperAge: number = 100;
@@ -112,9 +113,10 @@ export class ConnectionsComponent implements OnInit {
 		'interests': this.interests,
 		'radius': this.radius,
 		'sort': this.sort,
-		'i_like': this.i_like,
-		'i_dislike': this.i_dislike,
-		'like_me': this.like_me,
+		'connections_flag': this.connections_flag,
+		'i_like_flag': this.i_like_flag,
+		'i_dislike_flag': this.i_dislike_flag,
+		'like_me_flag': this.like_me_flag,
 	    'page': this.page,
 	    'online': this.online
   	}
@@ -140,9 +142,29 @@ export class ConnectionsComponent implements OnInit {
         }
     });
   }
+ 
+  unlike(mate_id) {
+    this.exploreService.unlike(mate_id).subscribe(response => {
+        if (response['success'] == 1) {
+          this.searchConnections();
+        } else {
+          alert('some error');
+        }
+    });
+  }
 
   dislike(mate_id) {
     this.exploreService.dislike(mate_id).subscribe(response => {
+        if (response['success'] == 1) {
+          this.searchConnections();
+        } else {
+          alert('some error');
+        }
+    });
+  }
+
+  undislike(mate_id) {
+    this.exploreService.undislike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
           this.searchConnections();
         } else {
@@ -172,19 +194,42 @@ export class ConnectionsComponent implements OnInit {
     this.searchConnections();
   }
 
-  manageILikeFlagChange() {
-  	this.i_like = !this.i_like;
-  	if (this.i_like) {
-  		this.i_dislike = false;
-  	}
-  }
+	manageConnectionsFlagChange() {
+		if (!this.connections_flag) {
+	  		this.connections_flag = true;
+	  		this.i_like_flag = false;
+	  		this.like_me_flag = false;
+	  		this.i_dislike_flag = false;
+		}
+	}
 
-  manageIDislikeFlagChange() {
-  	this.i_dislike = !this.i_dislike;
-  	if (this.i_dislike) {
-  		this.i_like = false;
-  	}
-  }
+	manageILikeFlagChange() {
+		if (!this.i_like_flag) {
+	  		this.connections_flag = false;
+	  		this.i_like_flag = true;
+	  		this.like_me_flag = false;
+	  		this.i_dislike_flag = false;
+		}
+	}
+
+	manageLikeMeFlagChange() {
+		if (!this.like_me_flag) {
+	  		this.connections_flag = false;
+	  		this.i_like_flag = false;
+	  		this.like_me_flag = true;
+	  		this.i_dislike_flag = false;
+		}
+	}
+
+	manageIDisikeFlagChange() {
+		if (!this.i_dislike_flag) {
+	  		this.connections_flag = false;
+	  		this.i_like_flag = false;
+	  		this.like_me_flag = false;
+	  		this.i_dislike_flag = true;
+		}
+	}
+
 
 ////////// ############### this part is for mate account view
 
@@ -250,7 +295,7 @@ export class ConnectionsComponent implements OnInit {
     this.exploreService.undislike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
           console.log(response);
-          this.updateActions(2, response['result']['action_to_user']);
+          this.updateActions(null, response['result']['action_to_user']);
         } else {
           alert('some error');
         }
