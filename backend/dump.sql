@@ -175,7 +175,7 @@ ALTER TABLE ONLY users_interests
 
 
 
--- crate table to store notifications for likes -1  and dislikes - 2, reports - 3 and visits - 4 unlike - 5
+-- crate table to store notifications: like - 10, like back: 11,  visits - 40,  unlike - 50, unlike with disconnect - 51
 DROP TABLE IF EXISTS notifications;
 
 CREATE TABLE notifications (

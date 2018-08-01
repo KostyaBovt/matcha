@@ -216,27 +216,6 @@ def auth_user(token):
 
     return {'success': success, 'user_id': user_id}
 
-def calulate_raiting(user_id):
-    db = shared.database()
-    sql = "select * likes where user_id_2='{:d} and action=1';".format(user_id)
-    db.request(sql)
-    likes = len(db.getResult())
-
-    sql = "select * likes where user_id_2='{:d} and action=2';".format(user_id)
-    db.request(sql)
-    dislikes = len(db.getResult())
-
-    base_rating = 0.5
-    if not likes and not dislikes:
-        additive_rating = 0
-    elif not likes and dislikes > 0:
-        additive_ratnig = 0
-    else:
-        additive_ratnig = 0.5 * likes / (likes + dislikes)
-
-    rating = round(base_rating + additive_ratnig, 4)
-    return rating
-
 
 @app.route("/profile/get", methods=['POST'])
 def profile_get():
@@ -1244,13 +1223,40 @@ def get_mate():
     else:
         result['action_to_user'] = None
 
-    # finally log this action in notification table
-    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 4)
-    db.request(sql, False)
+    # finally log this action in notification table (action visit)
+    if (result['action_of_user'] != 2 and result['action_to_user'] != 2):
+        sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 40)
+        db.request(sql, False)
 
     success = 1
     return jsonify({'success': success, 'method': 'explore/search_mates', 'result': result})
 
+def calulate_raiting(user_id):
+    db = shared.database()
+    sql = "select * from likes where user_id_2={:d} and action=1;".format(user_id)
+    db.request(sql)
+    likes = len(db.getResult())
+
+    sql = "select * from likes where user_id_2={:d} and action=2;".format(user_id)
+    db.request(sql)
+    dislikes = len(db.getResult())
+
+    base_rating = 0.5
+    if not likes and not dislikes:
+        additive_rating = 0
+    elif not likes and dislikes > 0:
+        additive_rating = 0
+    else:
+        additive_rating = 0.5 * likes / (likes + dislikes)
+
+    rating = round(base_rating + additive_rating, 4)
+    return rating
+
+def update_rating(user_id):
+    db = shared.database()
+    new_rating = calulate_raiting(user_id)
+    sql = "update users_info set rating={:f} where user_id={:d}".format(new_rating, user_id)
+    db.request(sql)
 
 @app.route("/explore/like", methods=['POST'])
 def like():
@@ -1307,8 +1313,12 @@ def like():
     else: 
         result['action_to_user'] = None
 
-    # finally log this action in notification table
-    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 1)
+    #update rating
+    update_rating(mate_id)
+
+    # finally log this action in notification table (10  - like, 11 - like back)
+    like_type = 11 if result['action_to_user'] == 1 else 10
+    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, like_type)
     db.request(sql, False)
 
     return jsonify({'success': success, 'method': 'explore/like', 'result': result})
@@ -1369,9 +1379,8 @@ def dislike():
     else: 
         result['action_to_user'] = None
 
-    # finally log this action in notification table
-    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 2)
-    db.request(sql, False)
+    #update rating
+    update_rating(mate_id)
 
     return jsonify({'success': success, 'method': 'explore/dislike', 'result': result})
 
@@ -1431,8 +1440,12 @@ def unlike():
     else: 
         result['action_to_user'] = None
 
+    #update rating
+    update_rating(mate_id)
+
     # finally log this action in notification table
-    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 5)
+    unlike_type = 51 if result['action_to_user'] == 1 else 50 
+    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, unlike_type)
     db.request(sql, False)
 
     return jsonify({'success': success, 'method': 'explore/unlike', 'result': result})
@@ -1493,9 +1506,9 @@ def undislike():
     else: 
         result['action_to_user'] = None
 
-    # finally log this action in notification table
-    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 6)
-    db.request(sql, False)
+    #update rating
+    update_rating(mate_id)
+
 
     return jsonify({'success': success, 'method': 'explore/unlike', 'result': result})
 
@@ -1556,9 +1569,50 @@ def report():
     else: 
         result['action_to_user'] = None
 
-    # finally log this action in notification table
-    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 4)
-    db.request(sql, False)
-
     return jsonify({'success': success, 'method': 'explore/report', 'result': result})
+
+
+
+@app.route("/notifications/get_list", methods=['POST'])
+def get_list():
+    success = 0
+    result = {}
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    page = request.json['page']
+    offset = (int(request.json['page']) - 1) * 15
+
+    # get db
+    db = shared.database()
+    sql = """
+        select notifications.*, users_info.username
+        from notifications
+        inner join users_info on notifications.user_id_1 = users_info.user_id
+        where notifications.user_id_2={:d}
+        order by notifications.action_time desc, id desc
+        limit 15
+        offset {:d}
+    """.format(user_id, offset)
+    db.request(sql)
+
+    if db.getRowCount():
+        result['notifications'] = db.getResult()
+    else: 
+        result['notifications'] = None
+
+    success = 1
+    return jsonify({'success': success, 'method': 'notifications/get_list', 'result': result})
+
+
 

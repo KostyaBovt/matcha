@@ -1,3 +1,22 @@
-<p>
-  notifications works!
-</p>
+<div class="notifications">
+  <table class="table .table-sm">
+<!--     <thead class="thead-light">
+      <tr>
+        <th scope="col">First</th>
+        <th scope="col">Last</th>
+        <th scope="col">Handle</th>
+      </tr>
+    </thead> -->
+    <tbody>
+      <tr *ngFor="let notif of notifications">
+        <td>{{notif.username}}</td>
+        <td *ngIf="notif.action == 10">liked you</td>
+        <td *ngIf="notif.action == 11">connect you</td>
+        <td *ngIf="notif.action == 40">visited you</td>
+        <td *ngIf="notif.action == 50">unliked you</td>
+        <td *ngIf="notif.action == 51">disconect you</td>
+        <td>at {{notif.action_time | date : 'medium'}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

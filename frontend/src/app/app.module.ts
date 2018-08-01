@@ -8,6 +8,7 @@ import {AuthGuard} from './services/auth-guard.service';
 import {UserService} from './services/user.service';
 import {ProfileService} from './services/profile.service';
 import {ExploreService} from './services/explore.service';
+import {NotificationsService} from './services/notifications.service';
 import {ApiService} from './services/api.service';
 
 
@@ -70,7 +71,7 @@ import { EmailConfirmComponent } from './components/pages/email-confirm/email-co
         apiKey: 'AIzaSyAIEehketHiJ7GavS9GkRnUfMN-qNZ-2KU'
     })
   ],
-  providers: [AuthGuard, UserService, ProfileService, ApiService, ExploreService],
+  providers: [AuthGuard, UserService, ProfileService, ApiService, ExploreService, NotificationsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
