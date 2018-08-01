@@ -9,8 +9,8 @@ import { ExploreService } from '../../../services/explore.service';
   styleUrls: ['./connections.component.css']
 })
 export class ConnectionsComponent implements OnInit {
-  man: boolean = false;
-  woman: boolean = false;
+  man: boolean = true;
+  woman: boolean = true;
   online: boolean = false;
   connections_flag: boolean = true;
   i_like_flag: boolean = false;
@@ -24,7 +24,7 @@ export class ConnectionsComponent implements OnInit {
   upperRating: number = 100;
 
   interests: string;
-  radius: number = 50;
+  radius: number = 100;
 
   sort_list: Array<any> =  [
     {value: "match_desc", name: "Match", order: "desc"},
@@ -57,21 +57,21 @@ export class ConnectionsComponent implements OnInit {
         if (response['success'] == 1) {
             let result = response['result'];
 
-            this.sex_preference = result['sex_preference'];
-            if (this.sex_preference == 1) {
-            	this.man = true;
-            } else if (this.sex_preference == 2) {
-            	this.woman = true;
-            } else {
-            	this.man = true;
-            	this.woman = true;            	
-            }
+            // this.sex_preference = result['sex_preference'];
+            // if (this.sex_preference == 1) {
+            // 	this.man = true;
+            // } else if (this.sex_preference == 2) {
+            // 	this.woman = true;
+            // } else {
+            // 	this.man = true;
+            // 	this.woman = true;            	
+            // }
 
             this.interests = result['interests'];
 
-            this.age = this.calucateAge(result['birth']);
-            this.bottomAge = (this.age - 3) < 18 ? 18 : (this.age - 3);
-            this.upperAge = (this.age + 3) > 100 ? 100 : (this.age + 3);
+            // this.age = this.calucateAge(result['birth']);
+            // this.bottomAge = (this.age - 3) < 18 ? 18 : (this.age - 3);
+            // this.upperAge = (this.age + 3) > 100 ? 100 : (this.age + 3);
 
         }
     });

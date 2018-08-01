@@ -1600,10 +1600,12 @@ def get_list():
         from notifications
         inner join users_info on notifications.user_id_1 = users_info.user_id
         where notifications.user_id_2={:d}
-        order by notifications.action_time desc, id desc
+        and not notifications.user_id_1 in (select user_id_2 from likes where user_id_1={:d} and (action=2 or action=3))
+        and not notifications.user_id_1 in (select user_id_1 from likes where user_id_2={:d} and (action=2 or action=3))
+        order by notifications.action_time desc
         limit 15
         offset {:d}
-    """.format(user_id, offset)
+    """.format(user_id, user_id, user_id, offset)
     db.request(sql)
 
     if db.getRowCount():
@@ -1615,4 +1617,4 @@ def get_list():
     return jsonify({'success': success, 'method': 'notifications/get_list', 'result': result})
 
 
-
+#  https://www.fullstackpython.com/websockets.html

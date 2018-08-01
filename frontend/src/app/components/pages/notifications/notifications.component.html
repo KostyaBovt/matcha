@@ -1,22 +1,69 @@
-<div class="notifications">
+<div *ngIf="!account_shown" class="notifications">
+  <div>
+      <h6 class="d-sm-inline-block">ALL NOTIFICATIONS:</h6>
+      <div *ngIf="notifications.length > 0 || page > 1" class="d-sm-inline-block paginator">
+        <button type="button" class="btn btn-primary" (click)="prevPage()" [disabled]="page == 1">Prev</button>
+        Page: {{page}}
+        <button type="button" class="btn btn-primary" (click)="nextPage()" >Next</button>
+      </div>
+    </div>
   <table class="table .table-sm">
-<!--     <thead class="thead-light">
-      <tr>
-        <th scope="col">First</th>
-        <th scope="col">Last</th>
-        <th scope="col">Handle</th>
-      </tr>
-    </thead> -->
     <tbody>
       <tr *ngFor="let notif of notifications">
-        <td>{{notif.username}}</td>
+        <td> <span class="clickable" (click)="showAccount(notif.user_id_1)">{{notif.username}}</span></td>
         <td *ngIf="notif.action == 10">liked you</td>
-        <td *ngIf="notif.action == 11">connect you</td>
+        <td *ngIf="notif.action == 11">liked you in answer</td>
         <td *ngIf="notif.action == 40">visited you</td>
         <td *ngIf="notif.action == 50">unliked you</td>
-        <td *ngIf="notif.action == 51">disconect you</td>
+        <td *ngIf="notif.action == 51">disconected from you</td>
         <td>at {{notif.action_time | date : 'medium'}}</td>
       </tr>
     </tbody>
   </table>
+</div>
+
+
+<div *ngIf="account_shown" class="row account-info">
+  <div class="col-sm-6">
+    <div class="photo-avatar" >
+      <img class="fitdiv" src="data:image/jpeg;base64,{{current_main_photo}}">
+    </div>
+    <div class="photo-small-avatar" *ngFor="let photo of account_info.photos">
+      <img class="fitdiv" src="data:image/jpeg;base64,{{photo.src}}" (click)="changeMainPhoto(photo.src)">
+    </div>
+  </div>
+  <div class="col-sm-6">
+      <button type="button" class="btn btn-danger" (click)="closeAccount()" >Close</button>
+      <h4>{{account_info.username}}, {{account_info.age }} <span *ngIf="account_info.gender == 1">&#9794;</span> <span *ngIf="account_info.gender  == 2">&#9793;</span></h4>
+      <div *ngIf="account_info.online_status"> online </div>
+      <div *ngIf="!account_info.online_status"> offline </div>
+      <div *ngIf="!account_info.online_status"> last seen: {{account_info.last_seen | date : 'medium' }} </div>
+      <h5>{{account_info.fname}} {{account_info.sname}}</h5>
+      <h6>Distance: {{account_info.distance | number:'1.1-1'}} km</h6>
+      <h6>Rating: {{account_info.rating * 100 | number:'2.1-1'}}%</h6>
+      <h6>Sex preference: <span *ngIf="account_info.sex_preference == 1">&#9794;</span> <span *ngIf="account_info.sex_preference  == 2">&#9793;</span> <span *ngIf="account_info.sex_preference  == 3">&#9794; and &#9793;</span></h6>
+      <h5>Interests:</h5>
+      <h6>{{account_info.interests}}</h6>
+      <h5>Bio:</h5>
+      <h6>{{account_info.bio}}</h6>
+      <div *ngIf="!account_info.action_of_user && !account_info.action_to_user" class="alert alert-secondary" role="alert"> No actions between you. Make first step!</div>
+
+      <div *ngIf="account_info.action_of_user == 1 && account_info.action_to_user == 1" class="alert alert-success" role="alert"> You are connencted! you liked each other</div>
+      <div *ngIf="account_info.action_of_user == 1 && account_info.action_to_user != 1" class="alert alert-warning" role="alert">You liked this person. Waiting for mutual like</div>
+      <div *ngIf="account_info.action_of_user != 1 && account_info.action_to_user == 1" class="alert alert-info" role="alert">This person liked you. Waiting for your action</div>
+
+      <div *ngIf="account_info.action_of_user == 2" class="alert alert-danger" role="alert"> You disliked this person. You will not see he/she in search anymore</div>
+      <div *ngIf="account_info.action_to_user == 2" class="alert alert-danger" role="alert"> This person disliked you. You will not see he/she in search anymore</div>
+      <div *ngIf="account_info.action_of_user == 3" class="alert alert-danger" role="alert"> You reported this person. You will not see he/she anewhere anymore and no actions aviable</div>
+      <div *ngIf="account_info.action_to_user == 3" class="alert alert-danger" role="alert"> This person reported you. You will not see he/she anewhere anymore and no actions aviable</div>
+<!--      <div class="alert alert-dark" role="alert"> You disliked this person</div>-->
+
+      <button *ngIf="account_info.action_of_user == 1 && account_info.action_to_user == 1" type="button" class="btn btn-success" (click)="goToMessages(account_info.user_id)" >Message</button>
+
+      <button *ngIf="!account_info.action_of_user  && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-success" (click)="likeFromAccount(account_info.user_id)" >Like</button>
+      <button *ngIf="account_info.action_of_user == 1 && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-secondary" (click)="unlikeFromAccount(account_info.user_id)" >UnLike</button>
+      <button *ngIf="!account_info.action_of_user  && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-danger" (click)="dislikeFromAccount(account_info.user_id)" >DisLike</button>
+      <button *ngIf="account_info.action_of_user == 2 && account_info.action_of_user != 3 && account_info.action_to_user != 3" type="button" class="btn btn-secondary" (click)="undislikeFromAccount(account_info.user_id)" >UnDisLike</button>
+      <button *ngIf="account_info.action_of_user != 3" type="button" class="btn btn-danger" (click)="reportFromAccount(account_info.user_id)" >REPORT FAKE!!!</button>
+  </div>
 </div>
