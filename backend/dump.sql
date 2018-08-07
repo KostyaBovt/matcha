@@ -175,14 +175,15 @@ ALTER TABLE ONLY users_interests
 
 
 
--- crate table to store notifications: like - 10, like back: 11,  visits - 40,  unlike - 50, unlike with disconnect - 51
+-- crate table to store notifications: like - 10, like back: 11,  visits - 40,  unlike - 50, unlike with disconnect - 51 (seen: 1 - not seen, 2 - seen)
 DROP TABLE IF EXISTS notifications;
 
 CREATE TABLE notifications (
   user_id_1 integer NOT NULL,
   user_id_2 integer NOT NULL,
   action integer NOT NULL,
-  action_time timestamp(0) DEFAULT now() NOT NULL
+  action_time timestamp(0) DEFAULT now() NOT NULL,
+  seen integer DEFAULT 1 NOT NULL
 );
 
 ALTER TABLE ONLY notifications
@@ -192,6 +193,36 @@ ALTER TABLE ONLY notifications
     ADD CONSTRAINT notifications_user_id_2_fkey FOREIGN KEY (user_id_2) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
+-- crate table to store messages (seen: 1 - not seen, 2 - seen)
+DROP TABLE IF EXISTS messages;
+
+CREATE TABLE messages (
+  id integer NOT NULL,
+  user_id_1 integer NOT NULL,
+  user_id_2 integer NOT NULL,
+  message text NOT NULL,
+  action_time timestamp(0) DEFAULT now() NOT NULL,
+  seen integer DEFAULT 1 NOT NULL
+);
+
+
+ALTER TABLE ONLY messages
+    ADD CONSTRAINT messages_pk PRIMARY KEY (id);
+
+CREATE SEQUENCE messages_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER TABLE ONLY messages ALTER COLUMN id SET DEFAULT nextval('messages_id_seq'::regclass);
+
+ALTER TABLE ONLY messages
+    ADD CONSTRAINT messages_user_id_1_fkey FOREIGN KEY (user_id_1) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY messages
+    ADD CONSTRAINT messages_user_id_2_fkey FOREIGN KEY (user_id_2) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- crate table to store likes - 1 and dislikes - 2, and reports - 3
 DROP TABLE IF EXISTS likes;

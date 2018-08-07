@@ -1,0 +1,36 @@
+.left-align {
+	float: left;
+}
+
+.right-align {
+	float: right;
+}
+
+.message {
+	border: 1px solid #ededed;
+	border-radius: 8px;
+	margin: 1px;
+	display: block;
+	width: 98%;
+	overflow: auto;
+}
+
+.red {
+	background-color: red;
+}
+
+.mate {
+	border: 1px solid #ededed;
+	border-radius: 8px;
+	margin: 1px;
+	display: block;
+	width: 100%;
+	overflow: auto;
+}
+
+.message-box {
+	/*border: 1px solid red;*/
+	height: 500px;
+	overflow: auto;
+    max-height: 500px;
+}

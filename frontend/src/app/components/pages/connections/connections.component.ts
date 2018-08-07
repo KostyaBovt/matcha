@@ -24,7 +24,7 @@ export class ConnectionsComponent implements OnInit {
   upperRating: number = 100;
 
   interests: string;
-  radius: number = 100;
+  radius: number = 50;
 
   sort_list: Array<any> =  [
     {value: "match_desc", name: "Match", order: "desc"},

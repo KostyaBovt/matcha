@@ -6,9 +6,29 @@ from shared import FileSaver
 from shared import vdf
 import base64
 import os
+# from flask_cors import CORS
+
+from flask_socketio import SocketIO, emit, send
 
 app = Flask(__name__)
 app.config.from_pyfile('../config/app_config.py')
+# CORS(app)
+socketio = SocketIO(app)
+
+@socketio.on('connect')
+def makeConnection():
+    # vdf(request.headers, 'header')
+    emit('message', {'text':'message text connect', 'name':'my_name'})
+
+@socketio.on('disconnect')
+def makeDisconnection():
+    # vdf("we get the disconnection func")
+    emit('message', {'text':'message text disconnect', 'name':'my_name'})
+
+@socketio.on('message')
+def getMessage():
+    # vdf("we get the message func")
+    emit('message', {'text':'message text hello', 'name':'my_name'})
 
 @app.route("/mail")
 def test_mail():
@@ -1615,6 +1635,121 @@ def get_list():
 
     success = 1
     return jsonify({'success': success, 'method': 'notifications/get_list', 'result': result})
+
+
+
+
+@app.route("/messages/get_current_mate_chat", methods=['POST'])
+def get_current_mate_chat():
+    success = 0
+    result = {}
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    mate_id = int(request.json['mate_id'])
+
+    db = shared.database()
+
+    # check if you are connected
+    sql = """
+        select * from likes where user_id_1={:d} and user_id_2={:d} and action = 1 and user_id_1 in (select user_id_2 from likes where user_id_1={:d})
+    """.format(user_id, mate_id, mate_id)
+    db.request(sql)
+
+    if not db.getRowCount():
+        return jsonify({'method': '/messages/get_current_mate_chat', 'success': success})
+
+
+    sql = """
+        select * from (
+            select *, 
+                CASE WHEN messages.user_id_1 = {:d} THEN 1
+                ELSE 2
+                END as direction
+            from messages
+            where ((user_id_1={:d} and user_id_2={:d}) or (user_id_1={:d} and user_id_2={:d}))
+            order by action_time desc
+            limit 20
+        ) as message_table
+        order by message_table.action_time asc
+    """.format(user_id, user_id, mate_id, mate_id, user_id)
+    db.request(sql)
+
+    if db.getRowCount():
+        result['messages'] = db.getResult()
+    else: 
+        result['messages'] = None
+
+    success = 1
+    return jsonify({'success': success, 'method': '/messages/get_current_mate_chat', 'result': result})
+
+
+@app.route("/messages/send_msg", methods=['POST'])
+def send_msg():
+    success = 0
+    result = {}
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    mate_id = int(request.json['mate_id'])
+
+    db = shared.database()
+
+    # check if you are connected
+    sql = """
+        select * from likes where user_id_1={:d} and user_id_2={:d} and action = 1 and user_id_1 in (select user_id_2 from likes where user_id_1={:d})
+    """.format(user_id, mate_id, mate_id)
+    db.request(sql)
+
+    if not db.getRowCount():
+        return jsonify({'method': '/messages/send_msg', 'success': success})
+
+
+    
+
+
+    sql = """
+        select * from (
+            select *, 
+                CASE WHEN messages.user_id_1 = {:d} THEN 1
+                ELSE 2
+                END as direction
+            from messages
+            where ((user_id_1={:d} and user_id_2={:d}) or (user_id_1={:d} and user_id_2={:d}))
+            order by action_time desc
+            limit 20
+        ) as message_table
+        order by message_table.action_time asc
+    """.format(user_id, user_id, mate_id, mate_id, user_id)
+    db.request(sql)
+
+    if db.getRowCount():
+        result['messages'] = db.getResult()
+    else: 
+        result['messages'] = None
+
+    success = 1
+    return jsonify({'success': success, 'method': '/messages/get_current_mate_chat', 'result': result})
 
 
 #  https://www.fullstackpython.com/websockets.html

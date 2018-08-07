@@ -63,7 +63,8 @@ export const mainLayoutRoutes: Routes = [
             {path: 'photos', component: PhotosComponent}
         ]
     },
-	{ path: 'messages', component: MessagesComponent, canActivate: [AuthGuard] },
+    { path: 'messages', component: MessagesComponent, canActivate: [AuthGuard] },
+    { path: 'messages/:mate_id', component: MessagesComponent, canActivate: [AuthGuard] },
 	{ path: 'connections', component: ConnectionsComponent, canActivate: [AuthGuard] },
     { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
     { path: 'logout', component: LogoutComponent, canActivate: [AuthGuard] },

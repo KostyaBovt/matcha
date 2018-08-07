@@ -10,6 +10,9 @@ import {ProfileService} from './services/profile.service';
 import {ExploreService} from './services/explore.service';
 import {NotificationsService} from './services/notifications.service';
 import {ApiService} from './services/api.service';
+import {WebsocketService} from './services/websocket.service';
+import {ChatService} from './services/chat.service';
+import {MessageService} from './services/message.service';
 
 
 import { AppComponent } from "./components/layout/app/app.component";
@@ -71,7 +74,7 @@ import { EmailConfirmComponent } from './components/pages/email-confirm/email-co
         apiKey: 'AIzaSyAIEehketHiJ7GavS9GkRnUfMN-qNZ-2KU'
     })
   ],
-  providers: [AuthGuard, UserService, ProfileService, ApiService, ExploreService, NotificationsService],
+  providers: [AuthGuard, UserService, ProfileService, ApiService, ExploreService, NotificationsService, WebsocketService, ChatService, MessageService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

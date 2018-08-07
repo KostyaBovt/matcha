@@ -1,3 +1,24 @@
-<p>
-  messages works!
-</p>
+<div class="row">
+	<div class="col-sm-3">
+		<div routerLink="/messages/1165" class="mate">Mate name 1 <span class="red">5</span></div>
+		<div routerLink="/messages/9999" class="mate">Mate name 2</div>
+	</div>
+	<div class="col-sm-9">
+		<div class="message-box">
+			<div class="message">
+				<div class="left-align">mate message 1</div>
+			</div>
+			<div class="message">
+				<div class="right-align"> my message 1</div>
+			</div>
+			<div class="message">
+				<div class="left-align"> mate message 2</div>
+			</div>
+		</div>
+
+		<div class="align-bottom">
+			<textarea class="form-control" [(ngModel)]="messageInput" ></textarea>
+		</div>
+		<button type="button" class="btn btn-primary" (click)="sendMsg()">Send</button>
+	</div>
+</div>
