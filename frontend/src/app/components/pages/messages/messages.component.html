@@ -1,12 +1,13 @@
 <div class="row">
 	<div class="col-sm-3">
-		<div routerLink="/messages/1165" class="mate">Mate name 1 <span class="red">5</span></div>
-		<div routerLink="/messages/9999" class="mate">Mate name 2</div>
+		<div *ngFor="let mateListItem of mateList" routerLink="/messages/{{mateListItem.user_id_mate}}" class="mate">{{mateListItem.username}} <span  *ngIf="mateListItem.count" class="red">{{mateListItem.count}}</span></div>
 	</div>
 	<div class="col-sm-9">
 		<div class="message-box">
+			<div>{{timeoutId}}</div>
+			<h6>chat with: {{account_info.username}}</h6>
 			<div *ngFor="let current_message of currentMateChat" class="message">
-				<div class="left-align">[{{current_message.id}}] - {{current_message.message}} - {{current_message.action_time | date : 'medium'}}</div>
+				<div [ngClass]="{'left-align': current_message.direction == 2, 'right-align': current_message.direction == 1}" >[{{current_message.id}}] - {{current_message.message}} - {{current_message.action_time | date : 'medium'}}</div>
 			</div>
 		</div>
 

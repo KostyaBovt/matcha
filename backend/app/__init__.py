@@ -1694,13 +1694,9 @@ def get_current_mate_chat():
     # mark last 20 messages as read
     if result['messages']:
         last_20_massages_ids = "( -999"
-        counter = 0
         for item in result['messages']:
             if item['direction'] == 2: # set seen only outcome messages
-                if counter:
-                    last_20_massages_ids = last_20_massages_ids + ", "
-                last_20_massages_ids = last_20_massages_ids + str(item['id'])
-                counter = counter + 1
+                last_20_massages_ids = last_20_massages_ids + ", " + str(item['id'])
         last_20_massages_ids = last_20_massages_ids + ")"
         sql = "update messages set seen=2 where id in {:s}".format(last_20_massages_ids)
         db.request(sql)
@@ -1774,6 +1770,17 @@ def send_msg():
     else: 
         result['new_messages'] = None
 
+    # mark as read nearly got messages
+    if result['new_messages']:
+        last_massages_ids = "( -999"
+        for item in result['new_messages']:
+            if item['direction'] == 2: # set seen only outcome messages
+                last_massages_ids = last_massages_ids + ", " + str(item['id'])
+        last_massages_ids = last_massages_ids + ")"
+        sql = "update messages set seen=2 where id in {:s}".format(last_massages_ids)
+        db.request(sql)
+
+
     success = 1
     return jsonify({'success': success, 'method': '/messages/send_msg', 'result': result})
 
@@ -1795,20 +1802,30 @@ def get_mate_list():
     # authorized user id
     user_id = auth_result['user_id']
 
-
-    mate_id = int(request.json['mate_id'])
-    message = request.json['message']
-    message = message[:100] if len(message) > 100 else message
-    first_msg_id = int(request.json['first_msg_id'])
-
     db = shared.database()
     sql = """
-        select count(id), max(action_time), users_info.username, users_info.fname, users_info.sname,
-            CASE WHEN messages.user_id_1 = {:d} THEN messages.user_id_2
-            ELSE messages.user_id_1
+        select count(CASE WHEN seen=1 and user_id_2={:d} THEN 1 END), max(action_time) as last_message_time, users_info.username, users_info.fname, users_info.sname,
+            CASE WHEN messages_table.user_id_1 = {:d} THEN messages_table.user_id_2
+            ELSE messages_table.user_id_1
             END as user_id_mate
-        from messages
-        inner join users_info on messages.user_id_mate
-    """.format()
+        from (
+            select * from messages where (user_id_1={:d} or user_id_2={:d}) 
+        ) as messages_table
+        inner join users_info on
+            CASE WHEN messages_table.user_id_1 = {:d} THEN messages_table.user_id_2 = users_info.user_id
+            ELSE messages_table.user_id_1 = users_info.user_id
+            END
+        group by user_id_mate, users_info.username, users_info.fname, users_info.sname
+        order by max(action_time)
+    """.format(user_id, user_id, user_id, user_id, user_id)
+    db.request(sql)
+
+    if db.getRowCount():
+        result['mate_list'] = db.getResult()
+    else: 
+        result['mate_list'] = None
+
+    success = 1
+    return jsonify({'success': success, 'method': '/messages/get_mate_list', 'result': result})
 
 #  https://www.fullstackpython.com/websockets.html
