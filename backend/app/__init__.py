@@ -1669,7 +1669,7 @@ def get_current_mate_chat():
     if not db.getRowCount():
         return jsonify({'method': '/messages/get_current_mate_chat', 'success': success})
 
-
+    # actually get last 20 messages/ direction: 1 outcome, 2 income
     sql = """
         select * from (
             select *, 
@@ -1678,10 +1678,10 @@ def get_current_mate_chat():
                 END as direction
             from messages
             where ((user_id_1={:d} and user_id_2={:d}) or (user_id_1={:d} and user_id_2={:d}))
-            order by action_time desc
+            order by id desc
             limit 20
         ) as message_table
-        order by message_table.action_time asc
+        order by message_table.id asc
     """.format(user_id, user_id, mate_id, mate_id, user_id)
     db.request(sql)
 
@@ -1689,6 +1689,21 @@ def get_current_mate_chat():
         result['messages'] = db.getResult()
     else: 
         result['messages'] = None
+
+
+    # mark last 20 messages as read
+    if result['messages']:
+        last_20_massages_ids = "( -999"
+        counter = 0
+        for item in result['messages']:
+            if item['direction'] == 2: # set seen only outcome messages
+                if counter:
+                    last_20_massages_ids = last_20_massages_ids + ", "
+                last_20_massages_ids = last_20_massages_ids + str(item['id'])
+                counter = counter + 1
+        last_20_massages_ids = last_20_massages_ids + ")"
+        sql = "update messages set seen=2 where id in {:s}".format(last_20_massages_ids)
+        db.request(sql)
 
     success = 1
     return jsonify({'success': success, 'method': '/messages/get_current_mate_chat', 'result': result})
@@ -1712,6 +1727,9 @@ def send_msg():
 
 
     mate_id = int(request.json['mate_id'])
+    message = request.json['message']
+    message = message[:100] if len(message) > 100 else message
+    first_msg_id = int(request.json['first_msg_id'])
 
     db = shared.database()
 
@@ -1721,13 +1739,21 @@ def send_msg():
     """.format(user_id, mate_id, mate_id)
     db.request(sql)
 
+    # if not connected - message is not permitted
     if not db.getRowCount():
         return jsonify({'method': '/messages/send_msg', 'success': success})
 
+    # actually insert message
+    sql = """
+        insert into messages (user_id_1, user_id_2, message) values ({:d}, {:d}, '{:s}') returning id
+    """.format(user_id, mate_id, message)
+    db.request(sql)
 
-    
+    # get id of last message
+    last_message_id = db.getLastRowId()
 
 
+    # get all messages that are before current messages and unread plus messages received after current
     sql = """
         select * from (
             select *, 
@@ -1735,21 +1761,54 @@ def send_msg():
                 ELSE 2
                 END as direction
             from messages
-            where ((user_id_1={:d} and user_id_2={:d}) or (user_id_1={:d} and user_id_2={:d}))
-            order by action_time desc
+            where (user_id_1={:d} and user_id_2={:d} and id > {:d} and seen=1) or (id={:d})
+            order by id desc
             limit 20
         ) as message_table
-        order by message_table.action_time asc
-    """.format(user_id, user_id, mate_id, mate_id, user_id)
+        order by message_table.id asc
+    """.format(user_id, mate_id, user_id, first_msg_id, last_message_id)
     db.request(sql)
 
     if db.getRowCount():
-        result['messages'] = db.getResult()
+        result['new_messages'] = db.getResult()
     else: 
-        result['messages'] = None
+        result['new_messages'] = None
 
     success = 1
-    return jsonify({'success': success, 'method': '/messages/get_current_mate_chat', 'result': result})
+    return jsonify({'success': success, 'method': '/messages/send_msg', 'result': result})
 
+
+
+@app.route("/messages/get_mate_list", methods=['POST'])
+def get_mate_list():
+    success = 0
+    result = {}
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+
+    mate_id = int(request.json['mate_id'])
+    message = request.json['message']
+    message = message[:100] if len(message) > 100 else message
+    first_msg_id = int(request.json['first_msg_id'])
+
+    db = shared.database()
+    sql = """
+        select count(id), max(action_time), users_info.username, users_info.fname, users_info.sname,
+            CASE WHEN messages.user_id_1 = {:d} THEN messages.user_id_2
+            ELSE messages.user_id_1
+            END as user_id_mate
+        from messages
+        inner join users_info on messages.user_id_mate
+    """.format()
 
 #  https://www.fullstackpython.com/websockets.html

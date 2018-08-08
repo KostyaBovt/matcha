@@ -16,8 +16,8 @@ export class MessageService {
     return this.apiService.request('messages/get_current_mate_chat', args);
   }
 
-  sendMsg(mate_id, message) {
-  	let args = {'mate_id': mate_id, 'message': message};
+  sendMsg(mate_id, message, first_msg_id) {
+  	let args = {'mate_id': mate_id, 'message': message, 'first_msg_id': first_msg_id};
     return this.apiService.request('messages/send_msg', args);
   }
 

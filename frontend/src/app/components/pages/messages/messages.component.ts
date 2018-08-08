@@ -13,6 +13,7 @@ export class MessagesComponent implements OnInit {
   mateList: Array<any> =[];
   currentMateChat: Array<any> = [];
   messageInput: string = "";
+  firstMsgId = 0;
 
   constructor(private activatedRoute: ActivatedRoute, private messageService: MessageService) { }
 
@@ -22,17 +23,18 @@ export class MessagesComponent implements OnInit {
   	this.activatedRoute.params.subscribe((params: Params) => {
         that.currentMateId = params['mate_id'];
 
-		// that.messageService.getMateList().subscribe(response => {
-		// 	let result = response['result'];
-		// 	that.mateList = result['mate_list'];
-		// });
+		that.messageService.getMateList().subscribe(response => {
+			let result = response['result'];
+			that.mateList = result['mate_list'];
+		});
 
 		if (that.currentMateId) {
 			that.messageService.getCurrentMateChat(that.currentMateId).subscribe(response => {
 				console.log(response);
 				let result = response['result'];
 				if (response['success'] == 1) {
-					that.currentMateChat = result['current_mate_chat'];
+					that.currentMateChat = result['messages'];
+					console.log(that.currentMateChat);
 				} else {
 					alert('some error!');
 				}
@@ -71,11 +73,15 @@ export class MessagesComponent implements OnInit {
 
 
  	sendMsg() {
-	    console.log('trying to send message in message component..........');
-		this.messageService.sendMsg(this.currentMateId, this.messageInput).subscribe(response => {
+	    if (this.currentMateChat.length > 0) {
+	    	this.firstMsgId = this.currentMateChat[0]['id'];
+	    }
+
+		this.messageService.sendMsg(this.currentMateId, this.messageInput, this.firstMsgId).subscribe(response => {
 			let result = response['result'];
 			console.log(result);
-			this.currentMateChat.push(result['new_messages']);
+			this.currentMateChat = this.currentMateChat.concat(result['new_messages']); 
+			console.log(this.currentMateChat);
 		});
 	}
 
