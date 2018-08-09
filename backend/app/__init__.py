@@ -6,29 +6,10 @@ from shared import FileSaver
 from shared import vdf
 import base64
 import os
-# from flask_cors import CORS
-
-from flask_socketio import SocketIO, emit, send
 
 app = Flask(__name__)
 app.config.from_pyfile('../config/app_config.py')
-# CORS(app)
-socketio = SocketIO(app)
 
-@socketio.on('connect')
-def makeConnection():
-    # vdf(request.headers, 'header')
-    emit('message', {'text':'message text connect', 'name':'my_name'})
-
-@socketio.on('disconnect')
-def makeDisconnection():
-    # vdf("we get the disconnection func")
-    emit('message', {'text':'message text disconnect', 'name':'my_name'})
-
-@socketio.on('message')
-def getMessage():
-    # vdf("we get the message func")
-    emit('message', {'text':'message text hello', 'name':'my_name'})
 
 @app.route("/mail")
 def test_mail():
@@ -1695,7 +1676,7 @@ def get_current_mate_chat():
     if result['messages']:
         last_20_massages_ids = "( -999"
         for item in result['messages']:
-            if item['direction'] == 2: # set seen only outcome messages
+            if item['direction'] == 2: # set seen only income messages
                 last_20_massages_ids = last_20_massages_ids + ", " + str(item['id'])
         last_20_massages_ids = last_20_massages_ids + ")"
         sql = "update messages set seen=2 where id in {:s}".format(last_20_massages_ids)
@@ -1749,7 +1730,7 @@ def send_msg():
     last_message_id = db.getLastRowId()
 
 
-    # get all messages that are before current messages and unread plus messages received after current
+    # get all messages that are before current messages and unread
     sql = """
         select * from (
             select *, 
@@ -1774,7 +1755,7 @@ def send_msg():
     if result['new_messages']:
         last_massages_ids = "( -999"
         for item in result['new_messages']:
-            if item['direction'] == 2: # set seen only outcome messages
+            if item['direction'] == 2: # set seen only income messages
                 last_massages_ids = last_massages_ids + ", " + str(item['id'])
         last_massages_ids = last_massages_ids + ")"
         sql = "update messages set seen=2 where id in {:s}".format(last_massages_ids)
@@ -1828,4 +1809,89 @@ def get_mate_list():
     success = 1
     return jsonify({'success': success, 'method': '/messages/get_mate_list', 'result': result})
 
-#  https://www.fullstackpython.com/websockets.html
+
+@app.route("/messages/load_prev_messages", methods=['POST'])
+def load_prev_messages():
+    success = 0
+    result = {}
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+    mate_id = int(request.json['mate_id'])
+    first_msg_id = int(request.json['first_msg_id'])
+
+    db = shared.database()
+
+    # get 20 messages that are before first_message_id
+    sql = """
+        select * from (
+            select *, 
+                CASE WHEN messages.user_id_1 = {:d} THEN 1
+                ELSE 2
+                END as direction
+            from messages
+            where ((user_id_1={:d} and user_id_2={:d}) or (user_id_1={:d} and user_id_2={:d}))
+            and id < {:d}
+            order by id desc
+            limit 20
+        ) as message_table
+        order by message_table.id asc
+    """.format(user_id, user_id, mate_id, mate_id, user_id, first_msg_id)
+    db.request(sql)
+
+
+    if db.getRowCount():
+        result['prev_messages'] = db.getResult()
+    else: 
+        result['prev_messages'] = []
+
+
+    # mark as read nearly got messages
+    if result['prev_messages']:
+        prev_massages_ids = "( -999"
+        for item in result['prev_messages']:
+            if item['direction'] == 2: # set seen only outcome messages
+                prev_massages_ids = prev_massages_ids + ", " + str(item['id'])
+        prev_massages_ids = prev_massages_ids + ")"
+        sql = "update messages set seen=2 where id in {:s}".format(prev_massages_ids)
+        db.request(sql)
+
+
+    success = 1
+    return jsonify({'success': success, 'method': '/messages/load_prev_messages', 'result': result})
+
+
+
+# @app.route("/messages/update_chat", methods=['POST'])
+# def update_chat():
+#     success = 0
+#     result = {}
+
+#     # authorize
+#     token = request.json['token']
+#     auth_result = auth_user(token)
+
+#     # if not authorized - return immediately
+#     if not auth_result['success']:
+#         return jsonify({'success': success})
+
+#     # authorized user id
+#     user_id = auth_result['user_id']
+#     mate_id = int(request.json['mate_id'])
+#     first_msg_id = int(request.json['first_msg_id'])
+
+#     db = shared.database()
+
+
+
+
+
+

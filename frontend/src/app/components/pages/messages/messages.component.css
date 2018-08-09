@@ -34,3 +34,13 @@
 	overflow: auto;
     max-height: 500px;
 }
+
+.prev-loader {
+	text-align: center;
+	color: #d1d1d1;	
+}
+
+.prev-loader:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}

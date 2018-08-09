@@ -21,5 +21,14 @@ export class MessageService {
     return this.apiService.request('messages/send_msg', args);
   }
 
+  loadPrevMessages(mate_id, first_msg_id) {
+    let args = {'mate_id': mate_id, 'first_msg_id': first_msg_id};
+    return this.apiService.request('messages/load_prev_messages', args);
+  }
+
+  updateChat(mate_id, first_msg_id) {
+    let args = {'mate_id': mate_id, 'first_msg_id': first_msg_id};
+    return this.apiService.request('messages/update_chat', args);
+  }
 
 }
