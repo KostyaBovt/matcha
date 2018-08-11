@@ -341,11 +341,11 @@ def profile_update():
         add_or = ""
         for interest in split_interests:
             sql = sql + """
-                {:s} interest='{:s}'
-            """.format(add_or, interest)
+                {:s} interest=%s 
+            """.format(add_or)
             if not add_or:
                 add_or = "OR"
-        db.request(sql)
+        db.request2(sql, tuple(split_interests))
 
         exist_interests = [x['interest'] for x in db.getResult()]
         to_add_interests = [item for item in split_interests if item not in exist_interests]
@@ -360,9 +360,9 @@ def profile_update():
         for to_add in to_add_interests:
             if not first:
                 sql = sql + ', '
-            sql = sql + "('" + to_add + "') "
+            sql = sql + "(%s) "
             first = False
-        db.request(sql, return_id_flag=False)
+        db.request2(sql, tuple(to_add_interests), return_id_flag=False)
 
     # tricky approach - we will delete all interests and add new list :)
     
@@ -378,11 +378,11 @@ def profile_update():
         add_or = ""
         for interest in split_interests:
             sql = sql + """
-                {:s} interest='{:s}'
-            """.format(add_or, interest)
+                {:s} interest=%s 
+            """.format(add_or)
             if not add_or:
                 add_or = "OR"        
-        db.request(sql)
+        db.request2(sql, tuple(split_interests))
         exist_interests_ids = [x['id'] for x in db.getResult()]
 
         # insert all new interest ids fo current user
@@ -478,15 +478,16 @@ def profile_update_email():
     
     #check if email already exist
     sql = """
-        select * from users where email='{:s}'
-    """.format(new_email)
-    db.request(sql)
+        select * from users where email=%s
+    """
+    args = (new_email,)
+    db.request2(sql, args)
 
     if db.getRowCount():
         # if email already exist - return immediately
         return jsonify({'success': success})
 
-    # if hash for email update confirm fro current user already exist - delete it
+    # if hash for email update confirm for current user already exist - delete it
     sql = """delete from email_update where user_id={:d}""".format(user_id)
     db.request(sql)
 
@@ -515,8 +516,9 @@ def confirm_update_email():
     db = shared.database()
     success = 0
 
-    sql = "select * from email_update where email_hash='{:s}' and confirm_hash='{:s}';".format(email_hash, confirm_hash)
-    db.request(sql)
+    sql = "select * from email_update where email_hash=%s and confirm_hash=%s;"
+    args = (email_hash, confirm_hash,)
+    db.request2(sql, args)
 
     if db.getRowCount():
         user_id = db.getResult()[0]['user_id']
@@ -644,8 +646,9 @@ def set_avatar():
 
     # set new avatar
     photo_hash = request.json['photo_hash']
-    sql = "update photos set avatar=1 where hash='{:s}'".format(photo_hash)
-    db.request(sql)
+    sql = "update photos set avatar=1 where hash=%s"
+    args = (photo_hash,)
+    db.request2(sql, args)
 
     success = 1
     return jsonify({'success': success, 'method': 'set_avatar'})
@@ -672,8 +675,9 @@ def delete_photo():
 
     # actually delete photo
     photo_hash = request.json['photo_hash']
-    sql = "delete from photos where user_id={:d} and hash='{:s}'".format(user_id, photo_hash)
-    db.request(sql)
+    sql = "delete from photos where user_id=%s and hash=%s"
+    agrs = (user_id, photo_hash,)
+    db.request2(sql, args)
 
     os.remove("/vagrant/backend/data/photos/" + photo_hash + ".jpeg")
 
@@ -700,11 +704,12 @@ def update_geotype():
     # get db
     db = shared.database()
 
-    # actually delete photo
+    # get args
     geo_type = int(request.json['geo_type'])
 
-    sql = "update users_info set geo_type={:d} where user_id={:d}".format(geo_type, user_id)
-    db.request(sql)
+    sql = "update users_info set geo_type=%s where user_id=%s"
+    args = (geo_type, user_id,)
+    db.request2(sql, args)
 
     success = 1
     return jsonify({'success': success, 'method': 'profile/update_geotype'})
@@ -729,12 +734,13 @@ def update_coords():
     # get db
     db = shared.database()
 
-    # actually delete photo
+    # get args
     lat = float(request.json['lat'])
     lng = float(request.json['lng'])
 
-    sql = "update users_info set geo_lat={:5.15f}, geo_lng={:5.15f} where user_id={:d}".format(lat, lng, user_id)
-    db.request(sql)
+    sql = "update users_info set geo_lat=%s, geo_lng=%s where user_id=%s"
+    args = (lat, lng, user_id,)
+    db.request2(sql, args)
 
     success = 1
     return jsonify({'success': success, 'method': 'profile/update_coords'})
@@ -805,18 +811,7 @@ def search_mates():
 
     # vdf(split_interests, 'split_interests')
     # vdf(inline_interests, 'inline_interests')
-
     # vdf(request.json, 'request')
-
-
-    for_online_filter = """
-        left join
-        (select user_id, now()::timestamp - login.last_seen as seen_ago from login
-        ) as online
-        on users.id = online.user_id
-    """
-
-
 
     # get matched mates
     sql = """
