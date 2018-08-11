@@ -29,17 +29,20 @@ def register():
     password = hasher.hash_string(password)
 
     db = shared.database()
-    sql = "select * from users where email='{:s}'".format(email)
-    db.request(sql)
+    sql = "select * from users where email=%s"
+    args = (email,)
+    db.request2(sql, args)
     if db.getRowCount():
         return jsonify({'success': 0, 'method': 'register'})
 
-    sql = "insert into users (email, password, confirmed) values ('{:s}', '{:s}', 0) returning id".format(email, password)
-    db.request(sql)
+    sql = "insert into users (email, password, confirmed) values (%s, %s, 0) returning id"
+    args = (email, password, )
+    db.request2(sql, args)
     user_id = db.getLastRowId()
 
-    sql = "insert into users_info (user_id) values ({:d}) returning id".format(user_id)
-    db.request(sql)
+    sql = "insert into users_info (user_id) values (%s) returning id"
+    args = (user_id)
+    db.request2(sql, args)
 
     email_hash = hasher.hash_string(email)
     confirm_hash = hasher.generate_hash(32)
@@ -80,8 +83,9 @@ def forgot():
 
     db = shared.database()
 
-    sql = "select * from users where email='{:s}';".format(email)
-    db.request(sql)
+    sql = "select * from users where email=%s;"
+    args = (email,)
+    db.request2(sql, args)
 
     if db.getRowCount():
         mailer = Mailer()
@@ -111,8 +115,9 @@ def check_reset(email_hash, reset_hash):
     db = shared.database()
     success = 0
 
-    sql = "select * from forgot where email_hash='{:s}' and reset_hash='{:s}';".format(email_hash, reset_hash)
-    db.request(sql)
+    sql = "select * from forgot where email_hash=%s and reset_hash=%s;"
+    args = (email_hash, reset_hash,)
+    db.request2(sql, args)
 
     if db.getRowCount():
         success = 1
@@ -135,8 +140,9 @@ def reset():
         return jsonify({'success': 0, 'method': 'reset'})
 
     db = shared.database()
-    sql = "select * from forgot where email_hash='{:s}' and reset_hash= '{:s}';".format(email_hash, reset_hash)
-    db.request(sql)
+    sql = "select * from forgot where email_hash=%s and reset_hash= %s;"
+    args = (email_hash, reset_hash,)
+    db.request2(sql, args)
     if not db.getRowCount():
         return jsonify({'success': 0, 'method': 'reset'})
 
@@ -159,8 +165,9 @@ def login():
     password = hasher.hash_string(password)
 
     db = shared.database()
-    sql = "select * from users where email='{:s}' and password='{:s}' and confirmed=1".format(email, password)
-    db.request(sql)
+    sql = "select * from users where email=%s and password=%s and confirmed=1"
+    args = (email, password,)
+    db.request2(sql, args)
     if not db.getRowCount():
         return jsonify({'success': 0, 'method': 'login'})
 
@@ -192,13 +199,13 @@ def auth():
     token = request.json['token']
 
     db = shared.database()
-    sql = "select * from login where token='{:s}';".format(token)
-    db.request(sql)
+    sql = "select * from login where token=%s;"
+    args = (token,)
+    db.request2(sql, args)
     if db.getRowCount():
         success = 1 
-
-    sql = "update login set last_seen=DEFAULT where token='{:s}';".format(token)
-    db.request(sql)
+        sql = "update login set last_seen=DEFAULT where token='{:s}';".format(token)
+        db.request(sql)
 
     return jsonify({'success': success, 'method': 'auth'})
 
@@ -207,8 +214,9 @@ def auth_user(token):
     user_id = None
 
     db = shared.database()
-    sql = "select * from login where token='{:s}';".format(token)
-    db.request(sql)
+    sql = "select * from login where token=%s;"
+    args = (token,)
+    db.request2(sql, args)
     if db.getRowCount():
         success = 1
         user_id = db.getResult()[0]['user_id']
@@ -307,17 +315,18 @@ def profile_update():
     sql = """
         update users_info
         set 
-        username='{:s}', 
-        fname='{:s}', 
-        sname='{:s}', 
-        gender='{:d}', 
-        sex_preference='{:d}', 
-        birth='{:s}', 
-        phone='{:s}', 
-        bio='{:s}' 
-        where user_id={:d}
-    """.format(username, fname, sname, gender, sex_preference, birth, phone, bio, user_id)
-    db.request(sql)
+        username=%s, 
+        fname=%s, 
+        sname=%s, 
+        gender=%s, 
+        sex_preference=%s, 
+        birth=%s, 
+        phone=%s, 
+        bio=%s 
+        where user_id=%s
+    """
+    args = (username, fname, sname, gender, sex_preference, birth, phone, bio, user_id,)
+    db.request2(sql, args)
 
     # interests per request
     interests = request.json['interests']
@@ -1412,17 +1421,19 @@ def unlike():
     sql = """
         select *
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
+        where user_id_1=%s
+        and user_id_2=%s
         and action=1
-    """.format(user_id, mate_id)
+    """
+    args = (user_id, mate_id,)
 
     # actions: 1 - like, 2 - dislike
-    db.request(sql)
+    db.request2(sql, args)
     if db.getRowCount():
         # just update action
-        sql = 'delete from likes where user_id_1={:d} and user_id_2={:d} and action=1'.format(user_id, mate_id)
-        db.request(sql)
+        sql = 'delete from likes where user_id_1=%s and user_id_2=%s and action=1'
+        agrs = (user_id, mate_id,)
+        db.request2(sql, args)
         success = 1
     else:
         # nothing to unlike
@@ -1432,10 +1443,11 @@ def unlike():
     sql = """
         select action
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
-    """.format(mate_id, user_id)
-    db.request(sql)
+        where user_id_1=%s
+        and user_id_2=%s
+    """
+    args = (mate_id, user_id,)
+    db.request2(sql, args)
     if db.getRowCount():
         result['action_to_user'] = db.getResult()[0]['action']
     else: 
@@ -1446,8 +1458,9 @@ def unlike():
 
     # finally log this action in notification table
     unlike_type = 51 if result['action_to_user'] == 1 else 50 
-    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, unlike_type)
-    db.request(sql, False)
+    sql = "insert into notifications (user_id_1, user_id_2, action) values (%s, %s, %s);"
+    args = (user_id, mate_id, unlike_type,)
+    db.request2(sql, args, False)
 
     return jsonify({'success': success, 'method': 'explore/unlike', 'result': result})
 
@@ -1478,17 +1491,19 @@ def undislike():
     sql = """
         select *
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
+        where user_id_1=%s
+        and user_id_2=%s
         and action=2
-    """.format(user_id, mate_id)
+    """
+    args = (user_id, mate_id,)
 
     # actions: 1 - like, 2 - dislike
-    db.request(sql)
+    db.request2(sql, args)
     if db.getRowCount():
         # just update action
-        sql = 'delete from likes where user_id_1={:d} and user_id_2={:d} and action=2'.format(user_id, mate_id)
-        db.request(sql)
+        sql = 'delete from likes where user_id_1=%s and user_id_2=%s and action=2'
+        args = (user_id, mate_id,)
+        db.request2(sql, args)
         success = 1
     else:
         # nothing to undislike
@@ -1498,10 +1513,11 @@ def undislike():
     sql = """
         select action
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
-    """.format(mate_id, user_id)
-    db.request(sql)
+        where user_id_1=%s
+        and user_id_2=%s
+    """
+    args = (mate_id, user_id,)
+    db.request2(sql, args)
     if db.getRowCount():
         result['action_to_user'] = db.getResult()[0]['action']
     else: 
@@ -1541,30 +1557,34 @@ def report():
     sql = """
         select *
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
-    """.format(user_id, mate_id)
+        where user_id_1=%s
+        and user_id_2=%s
+    """
+    args = (user_id, mate_id,)
 
     # actions: 1 - like, 2 - dislike,  3 - report
-    db.request(sql)
+    db.request2(sql, args)
     if db.getRowCount():
         # just update action
-        sql = 'update likes set action=3 where user_id_1={:d} and user_id_2={:d}'.format(user_id, mate_id)
-        db.request(sql)
+        sql = 'update likes set action=3 where user_id_1=%s and user_id_2=%s'
+        args =(user_id, mate_id,)
+        db.request2(sql, args)
         success = 1
     else:
-        sql = 'insert into likes (user_id_1, user_id_2, action) values ({:d}, {:d}, 3)'.format(user_id, mate_id)
-        db.request(sql, False)
+        sql = 'insert into likes (user_id_1, user_id_2, action) values (%s, %s, 3)'
+        args = (user_id, mate_id,)
+        db.request2(sql, args, False)
         success = 1
 
     # update action of mate (if he perofrmed action during profile view)    
     sql = """
         select action
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
-    """.format(mate_id, user_id)
-    db.request(sql)
+        where user_id_1=%s
+        and user_id_2=%s
+    """
+    args = (mate_id, user_id)
+    db.request2(sql, args)
     if db.getRowCount():
         result['action_to_user'] = db.getResult()[0]['action']
     else: 
@@ -1600,14 +1620,15 @@ def get_list():
         select notifications.*, users_info.username
         from notifications
         inner join users_info on notifications.user_id_1 = users_info.user_id
-        where notifications.user_id_2={:d}
-        and not notifications.user_id_1 in (select user_id_2 from likes where user_id_1={:d} and (action=2 or action=3))
-        and not notifications.user_id_1 in (select user_id_1 from likes where user_id_2={:d} and (action=2 or action=3))
+        where notifications.user_id_2=%s
+        and not notifications.user_id_1 in (select user_id_2 from likes where user_id_1=%s and (action=2 or action=3))
+        and not notifications.user_id_1 in (select user_id_1 from likes where user_id_2=%s and (action=2 or action=3))
         order by notifications.action_time desc
         limit 15
-        offset {:d}
-    """.format(user_id, user_id, user_id, offset)
-    db.request(sql)
+        offset %s
+    """
+    args = (user_id, user_id, user_id, offset,)
+    db.request2(sql, args)
 
     if db.getRowCount():
         result['notifications'] = db.getResult()
@@ -1643,9 +1664,10 @@ def get_current_mate_chat():
 
     # check if you are connected
     sql = """
-        select * from likes where user_id_1={:d} and user_id_2={:d} and action = 1 and user_id_1 in (select user_id_2 from likes where user_id_1={:d})
-    """.format(user_id, mate_id, mate_id)
-    db.request(sql)
+        select * from likes where user_id_1=%s and user_id_2=%s and action = 1 and user_id_1 in (select user_id_2 from likes where user_id_1=%s)
+    """
+    args = (user_id, mate_id, mate_id,)
+    db.request2(sql, args)
 
     if not db.getRowCount():
         return jsonify({'method': '/messages/get_current_mate_chat', 'success': success})
@@ -1654,17 +1676,18 @@ def get_current_mate_chat():
     sql = """
         select * from (
             select *, 
-                CASE WHEN messages.user_id_1 = {:d} THEN 1
+                CASE WHEN messages.user_id_1 = %s THEN 1
                 ELSE 2
                 END as direction
             from messages
-            where ((user_id_1={:d} and user_id_2={:d}) or (user_id_1={:d} and user_id_2={:d}))
+            where ((user_id_1=%s and user_id_2=%s) or (user_id_1=%s and user_id_2=%s))
             order by id desc
             limit 20
         ) as message_table
         order by message_table.id asc
-    """.format(user_id, user_id, mate_id, mate_id, user_id)
-    db.request(sql)
+    """
+    args = (user_id, user_id, mate_id, mate_id, user_id,)
+    db.request2(sql, args)
 
     if db.getRowCount():
         result['messages'] = db.getResult()
@@ -1704,7 +1727,7 @@ def send_msg():
 
 
     mate_id = int(request.json['mate_id'])
-    message = request.json['message']
+    message = request.json['message'].encode('utf8')
     message = message[:100] if len(message) > 100 else message
     first_msg_id = int(request.json['first_msg_id'])
 
@@ -1712,9 +1735,10 @@ def send_msg():
 
     # check if you are connected
     sql = """
-        select * from likes where user_id_1={:d} and user_id_2={:d} and action = 1 and user_id_1 in (select user_id_2 from likes where user_id_1={:d})
-    """.format(user_id, mate_id, mate_id)
-    db.request(sql)
+        select * from likes where user_id_1=%s and user_id_2=%s and action = 1 and user_id_1 in (select user_id_2 from likes where user_id_1=%s)
+    """
+    args = (user_id, mate_id, mate_id,)
+    db.request2(sql, args)
 
     # if not connected - message is not permitted
     if not db.getRowCount():
@@ -1722,9 +1746,10 @@ def send_msg():
 
     # actually insert message
     sql = """
-        insert into messages (user_id_1, user_id_2, message) values ({:d}, {:d}, '{:s}') returning id
-    """.format(user_id, mate_id, message)
-    db.request(sql)
+        insert into messages (user_id_1, user_id_2, message) values (%s, %s, %s) returning id
+    """
+    args = (user_id, mate_id, message,)
+    db.request2(sql, args)
 
     # get id of last message
     last_message_id = db.getLastRowId()
@@ -1734,17 +1759,18 @@ def send_msg():
     sql = """
         select * from (
             select *, 
-                CASE WHEN messages.user_id_1 = {:d} THEN 1
+                CASE WHEN messages.user_id_1 = %s THEN 1
                 ELSE 2
                 END as direction
             from messages
-            where (user_id_1={:d} and user_id_2={:d} and id > {:d} and seen=1) or (id={:d})
+            where (user_id_1=%s and user_id_2=%s and id > %s and seen=1) or (id=%s)
             order by id desc
             limit 20
         ) as message_table
         order by message_table.id asc
-    """.format(user_id, mate_id, user_id, first_msg_id, last_message_id)
-    db.request(sql)
+    """
+    args = (user_id, mate_id, user_id, first_msg_id, last_message_id,)
+    db.request2(sql, args)
 
     if db.getRowCount():
         result['new_messages'] = db.getResult()
@@ -1785,21 +1811,22 @@ def get_mate_list():
 
     db = shared.database()
     sql = """
-        select count(CASE WHEN seen=1 and user_id_2={:d} THEN 1 END), max(action_time) as last_message_time, users_info.username, users_info.fname, users_info.sname,
-            CASE WHEN messages_table.user_id_1 = {:d} THEN messages_table.user_id_2
+        select count(CASE WHEN seen=1 and user_id_2=%s THEN 1 END), max(action_time) as last_message_time, users_info.username, users_info.fname, users_info.sname,
+            CASE WHEN messages_table.user_id_1 = %s THEN messages_table.user_id_2
             ELSE messages_table.user_id_1
             END as user_id_mate
         from (
-            select * from messages where (user_id_1={:d} or user_id_2={:d}) 
+            select * from messages where (user_id_1=%s or user_id_2=%s) 
         ) as messages_table
         inner join users_info on
-            CASE WHEN messages_table.user_id_1 = {:d} THEN messages_table.user_id_2 = users_info.user_id
+            CASE WHEN messages_table.user_id_1 = %s THEN messages_table.user_id_2 = users_info.user_id
             ELSE messages_table.user_id_1 = users_info.user_id
             END
         group by user_id_mate, users_info.username, users_info.fname, users_info.sname
         order by max(action_time)
-    """.format(user_id, user_id, user_id, user_id, user_id)
-    db.request(sql)
+    """
+    args = (user_id, user_id, user_id, user_id, user_id,)
+    db.request2(sql, args)
 
     if db.getRowCount():
         result['mate_list'] = db.getResult()
@@ -1834,18 +1861,19 @@ def load_prev_messages():
     sql = """
         select * from (
             select *, 
-                CASE WHEN messages.user_id_1 = {:d} THEN 1
+                CASE WHEN messages.user_id_1 = %s THEN 1
                 ELSE 2
                 END as direction
             from messages
-            where ((user_id_1={:d} and user_id_2={:d}) or (user_id_1={:d} and user_id_2={:d}))
-            and id < {:d}
+            where ((user_id_1=%s and user_id_2=%s) or (user_id_1=%s and user_id_2=%s))
+            and id < %s
             order by id desc
             limit 20
         ) as message_table
         order by message_table.id asc
-    """.format(user_id, user_id, mate_id, mate_id, user_id, first_msg_id)
-    db.request(sql)
+    """
+    args = (user_id, user_id, mate_id, mate_id, user_id, first_msg_id,)
+    db.request2(sql, args)
 
 
     if db.getRowCount():
