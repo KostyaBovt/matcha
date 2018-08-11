@@ -834,7 +834,7 @@ def search_mates():
             (select user_id, count(interests.interest) as matched_interests 
             from users_interests
             inner join interests on users_interests.interest_id=interests.id
-            where interests.interest in {:s}
+            where interests.interest in %s
             and not user_id={:d}
             group by user_id) as user_match
         on users.id=user_match.user_id
@@ -851,7 +851,7 @@ def search_mates():
         and not users.id in (select user_id_1 from likes where user_id_2={:d} and (action=2 or action=3))
         and users_info.geo_lat is not null
         and users_info.geo_lng is not null
-        and distance < {:f}\n""".format(inline_interests, user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, user_id, radius)
+        and distance < {:f}\n""".format(user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, user_id, radius)
 
     if (man and not woman):
         sql = sql + '\t\tand users_info.gender=1\n'
@@ -893,7 +893,8 @@ def search_mates():
     # vdf(sql, 'sql')
 
     filesaver = FileSaver()
-    db.request(sql)
+    args = (tuple(split_interests),)
+    db.request2(sql, args)
     if db.getRowCount() and not db.getError():
         result_array = db.getResult()
         # vdf(result_array, 'result')
@@ -1012,7 +1013,7 @@ def search_connections():
             (select user_id, count(interests.interest) as matched_interests 
             from users_interests
             inner join interests on users_interests.interest_id=interests.id
-            where interests.interest in {:s}
+            where interests.interest in %s
             and not user_id={:d}
             group by user_id) as user_match
         on users.id=user_match.user_id
@@ -1028,7 +1029,7 @@ def search_connections():
         and not users.id in (select user_id_1 from likes where user_id_2={:d} and (action = 2 or action = 3))
         and users_info.geo_lat is not null
         and users_info.geo_lng is not null
-        and distance < {:f}\n""".format(user_id, inline_interests, user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, radius)
+        and distance < {:f}\n""".format(user_id, user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, radius)
 
     if (i_like_flag):
         sql = sql + '\t\tand users.id in (select user_id_2 from likes where user_id_1={:d} and action=1 and not user_id_2 in (select user_id_1 from likes where user_id_2={:d}))\n'.format(user_id, user_id)
@@ -1082,7 +1083,8 @@ def search_connections():
     # vdf(sql, 'sql')
 
     filesaver = FileSaver()
-    db.request(sql)
+    args = (tuple(split_interests),)
+    db.request2(sql, args)
     if db.getRowCount() and not db.getError():
         result_array = db.getResult()
         # vdf(result_array, 'result')
@@ -1154,10 +1156,11 @@ def get_mate():
         from users
         left join login on users.id = login.user_id
         inner join users_info on users.id = users_info.user_id
-        where users.id='{:d}'
-    """.format(mate_id)
+        where users.id=%s
+    """
+    args = (mate_id,)
 
-    db.request(sql)
+    db.request2(sql, args)
     if db.getRowCount():
         result = db.getResult()[0]
         result['rating'] = float(result['rating'])
@@ -1173,10 +1176,10 @@ def get_mate():
         from users_interests
         inner join interests
         on users_interests.interest_id = interests.id
-        where users_interests.user_id='{:d}'
-    """.format(mate_id)
-
-    db.request(sql)
+        where users_interests.user_id=%s
+    """
+    args = (mate_id,)
+    db.request2(sql, args)
     if not db.getError():
         success = 1
         result_interests = db.getResult()
@@ -1191,8 +1194,9 @@ def get_mate():
 
     # get mates photos and avatar
     filesaver = FileSaver()
-    sql = "select * from photos where user_id = {:d}".format(mate_id)
-    db.request(sql)
+    sql = "select * from photos where user_id = %s"
+    args = (mate_id,)
+    db.request2(sql, args)
     photos = []
     avatar = ''
     if db.getRowCount() and not db.getError():
@@ -1289,30 +1293,34 @@ def like():
     sql = """
         select *
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
-    """.format(user_id, mate_id)
+        where user_id_1=%s
+        and user_id_2=%s
+    """
+    args = (user_id, mate_id,)
 
     # actions: 1 - like, 2 - dislike
-    db.request(sql)
+    db.request2(sql, args)
     if db.getRowCount():
         # just update action
-        sql = 'update likes set action=1 where user_id_1={:d} and user_id_2={:d}'.format(user_id, mate_id)
-        db.request(sql)
+        sql = 'update likes set action=1 where user_id_1=%s and user_id_2=%s'
+        args = (user_id, mate_id,)
+        db.request2(sql, args)
         success = 1
     else:
-        sql = 'insert into likes (user_id_1, user_id_2, action) values ({:d}, {:d}, 1)'.format(user_id, mate_id)
-        db.request(sql, False)
+        sql = 'insert into likes (user_id_1, user_id_2, action) values (%s, %s, 1)'
+        args = (user_id, mate_id,)
+        db.request2(sql, args, False)
         success = 1
 
     # update action of mate (if he perofrmed action during profile view)    
     sql = """
         select action
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
-    """.format(mate_id, user_id)
-    db.request(sql)
+        where user_id_1=%s
+        and user_id_2=%s
+    """
+    args = (mate_id, user_id,)
+    db.request2(sql, args)
     if db.getRowCount():
         result['action_to_user'] = db.getResult()[0]['action']
     else: 
@@ -1323,8 +1331,9 @@ def like():
 
     # finally log this action in notification table (10  - like, 11 - like back)
     like_type = 11 if result['action_to_user'] == 1 else 10
-    sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, like_type)
-    db.request(sql, False)
+    sql = "insert into notifications (user_id_1, user_id_2, action) values (%s, %s, %s);"
+    args = (user_id, mate_id, like_type,)
+    db.request2(sql, args, False)
 
     return jsonify({'success': success, 'method': 'explore/like', 'result': result})
 
@@ -1355,30 +1364,34 @@ def dislike():
     sql = """
         select *
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
-    """.format(user_id, mate_id)
+        where user_id_1=%s
+        and user_id_2=%s
+    """
+    args = (user_id, mate_id,)
 
     # actions: 1 - like, 2 - dislike,  3 - report
-    db.request(sql)
+    db.request2(sql, args)
     if db.getRowCount():
         # just update action
-        sql = 'update likes set action=2 where user_id_1={:d} and user_id_2={:d}'.format(user_id, mate_id)
-        db.request(sql)
+        sql = 'update likes set action=2 where user_id_1=%s and user_id_2=%s'
+        args = (user_id, mate_id,)
+        db.request2(sql, args)
         success = 1
     else:
-        sql = 'insert into likes (user_id_1, user_id_2, action) values ({:d}, {:d}, 2)'.format(user_id, mate_id)
-        db.request(sql, False)
+        sql = 'insert into likes (user_id_1, user_id_2, action) values (%s, %s, 2)'
+        agrs = (user_id, mate_id,)
+        db.request2(sql, args, False)
         success = 1
 
     # update action of mate (if he perofrmed action during profile view)    
     sql = """
         select action
         from likes
-        where user_id_1={:d}
-        and user_id_2={:d}
-    """.format(mate_id, user_id)
-    db.request(sql)
+        where user_id_1=%s
+        and user_id_2=%s
+    """
+    args = (mate_id, user_id,)
+    db.request2(sql, args)
     if db.getRowCount():
         result['action_to_user'] = db.getResult()[0]['action']
     else: 
@@ -1893,28 +1906,88 @@ def load_prev_messages():
 
 
 
-# @app.route("/messages/update_chat", methods=['POST'])
-# def update_chat():
-#     success = 0
-#     result = {}
+@app.route("/messages/update_chat", methods=['POST'])
+def update_chat():
+    success = 0
+    result = {}
 
-#     # authorize
-#     token = request.json['token']
-#     auth_result = auth_user(token)
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
 
-#     # if not authorized - return immediately
-#     if not auth_result['success']:
-#         return jsonify({'success': success})
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
 
-#     # authorized user id
-#     user_id = auth_result['user_id']
-#     mate_id = int(request.json['mate_id'])
-#     first_msg_id = int(request.json['first_msg_id'])
+    # authorized user id
+    user_id = auth_result['user_id']
+    mate_id = int(request.json['mate_id'])
+    first_msg_id = int(request.json['first_msg_id'])
 
-#     db = shared.database()
+    db = shared.database()
+
+    # first get updated mate list
+    sql = """
+        select count(CASE WHEN seen=1 and user_id_2=%s and not user_id_1=%s THEN 1 END), max(action_time) as last_message_time, users_info.username, users_info.fname, users_info.sname,
+            CASE WHEN messages_table.user_id_1 = %s THEN messages_table.user_id_2
+            ELSE messages_table.user_id_1
+            END as user_id_mate
+        from (
+            select * from messages where (user_id_1=%s or user_id_2=%s) 
+        ) as messages_table
+        inner join users_info on
+            CASE WHEN messages_table.user_id_1 = %s THEN messages_table.user_id_2 = users_info.user_id
+            ELSE messages_table.user_id_1 = users_info.user_id
+            END
+        group by user_id_mate, users_info.username, users_info.fname, users_info.sname
+        order by max(action_time)
+    """
+    args = (user_id, mate_id, user_id, user_id, user_id, user_id,)
+    db.request2(sql, args)
+
+    if db.getRowCount():
+        result['mate_list'] = db.getResult()
+    else: 
+        result['mate_list'] = None
+
+    # if chat with some mate is opened - we get new income messages for received mate id
+    result['new_messages'] = []
+
+    if mate_id > 0:
+        sql = """
+            select * from (
+                select *, 
+                    CASE WHEN messages.user_id_1 = %s THEN 1
+                    ELSE 2
+                    END as direction
+                from messages
+                where (user_id_1=%s and user_id_2=%s)
+                and id > %s
+                and seen=1
+            ) as message_table
+            order by message_table.id asc
+        """
+        args = (user_id, mate_id, user_id, first_msg_id,)
+        db.request2(sql, args)
 
 
+        if db.getRowCount():
+            result['new_messages'] = db.getResult()
+        else: 
+            result['new_messages'] = []
 
 
+        # mark as read nearly got messages
+        if result['new_messages']:
+            new_massages_ids = "( -999"
+            for item in result['new_messages']:
+                if item['direction'] == 2: # set seen only income messages
+                    new_massages_ids = new_massages_ids + ", " + str(item['id'])
+            new_massages_ids = new_massages_ids + ")"
+            sql = "update messages set seen=2 where id in {:s}".format(new_massages_ids)
+            db.request(sql)
 
+
+    success = 1
+    return jsonify({'success': success, 'method': '/messages/update_chat', 'result': result})
 

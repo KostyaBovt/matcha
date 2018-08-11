@@ -5,6 +5,7 @@
 	<div class="col-sm-9">
 		<div>timeout_id: {{timeoutId}}</div>
 		<div>number_of_prev_messages_prepended: {{number_of_prev_messages_prepended}}</div>
+		<div>currentMateId: {{currentMateId}}</div>
 
 		<h6>chat with: {{account_info.username}}</h6>
 		<div class="message-box">
@@ -14,9 +15,9 @@
 			</div>
 		</div>
 
-		<div class="align-bottom">
+		<div *ngIf="currentMateId" class="align-bottom">
 			<textarea class="form-control" [(ngModel)]="messageInput" ></textarea>
 		</div>
-		<button type="button" class="btn btn-primary" (click)="sendMsg()">Send</button>
+		<button *ngIf="currentMateId" type="button" class="btn btn-primary" (click)="sendMsg()">Send</button>
 	</div>
 </div>

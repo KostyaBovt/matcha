@@ -10,7 +10,7 @@ import { ExploreService } from '../../../services/explore.service';
 })
 export class MessagesComponent implements OnInit, OnDestroy {
 
-  currentMateId: number = null;
+  currentMateId: number = 0;
   mateList: Array<any> =[];
   currentMateChat: Array<any> = [];
   messageInput: string = "";
@@ -67,32 +67,39 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
 		}
 
-		// that.timeoutId = setTimeout(function updateChat() {
-  //       	console.log('new timeout with id:' + that.timeoutId)
-		// 	console.log('alert 1 sec');
+		that.timeoutId = setTimeout(function updateChat() {
+        	console.log('new timeout with id:' + that.timeoutId)
+			console.log('alert 1 sec');
 			
-		//     if (that.currentMateChat.length > 0) {
-		//     	that.firstMsgId = that.currentMateChat[0]['id'];
-		//     }
+		    if (that.currentMateChat.length > 0) {
+		    	that.firstMsgId = that.currentMateChat[0]['id'];
+		    }
 
-		// 	that.messageService.updateChat(that.currentMateId, that.firstMsgId).subscribe(response => {
-		// 		console.log(response);
-		// 		let result = response['result'];
-		// 		if (response['success'] == 1) {
-		// 			if (result['messages']) {
-		// 				that.currentMateChat = that.currentMateChat.concat(result['new_messages']);
-		// 			} else {
-		// 				console.log('no new income messages to add');
-		// 			}
-		// 			that.mateList = result['mate_list'];
-		// 		} else {
-		// 			alert('some error!');
-		// 		}
-		// 	});
+		    if (!that.currentMateId) {
+		    	that.currentMateId = 0;
+		    }
+
+			that.messageService.updateChat(that.currentMateId, that.firstMsgId).subscribe(response => {
+				console.log(response);
+				let result = response['result'];
+				if (response['success'] == 1) {
+					if (result['new_messages'].length > 0) {
+						that.currentMateChat = that.currentMateChat.concat(result['new_messages']);
+						console.log('we have smth: ');
+						console.log(result['new_messages']);
+					} else {
+						console.log('no new income messages to add');
+					}
+					console.log('updating mate list');
+					that.mateList = result['mate_list'];
+				} else {
+					alert('some error!');
+				}
+			});
 
 
-		// 	that.timeoutId = setTimeout(updateChat, 2000);
-		// }, 2000);
+			that.timeoutId = setTimeout(updateChat, 2000);
+		}, 2000);
 
     });
 
