@@ -14,6 +14,7 @@ export class MainComponent {
 	geo_type: number;
 	myIP: string;
 
+
   constructor(private profileService: ProfileService, private http: HttpClient) {
 
   }
@@ -22,8 +23,10 @@ export class MainComponent {
     console.log('init main');
   	this.profileService.get().subscribe(response => {
 
-  		if (response['success'] == 1 && response['result']['geo_type'] == 1) {
-  			// if we get profile data geo_type is 1 (auto)
+
+
+			// if we get profile data geo_type is 1 (auto)
+      if (response['success'] == 1 && response['result']['geo_type'] == 1) {
 
 				let that = this;
         if ("geolocation" in navigator) {
@@ -85,6 +88,8 @@ export class MainComponent {
       }
 
   	});
+
+
   }
 
   getLocationByIP(IP_adress) {

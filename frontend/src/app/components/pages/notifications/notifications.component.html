@@ -16,7 +16,7 @@
         <td *ngIf="notif.action == 40">visited you</td>
         <td *ngIf="notif.action == 50">unliked you</td>
         <td *ngIf="notif.action == 51">disconected from you</td>
-        <td>at {{notif.action_time | date : 'medium'}}</td>
+        <td>at {{notif.action_time | date : 'medium'}} <span *ngIf="notif.seen == 1" class="red">new</span></td>
       </tr>
     </tbody>
   </table>

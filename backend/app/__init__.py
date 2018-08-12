@@ -1643,6 +1643,15 @@ def get_list():
     else: 
         result['notifications'] = None
 
+    # mark last get notifs as read
+    if result['notifications']:
+        last_notifs_ids = "( -999"
+        for item in result['notifications']:
+            last_notifs_ids = last_notifs_ids + ", " + str(item['id'])
+        last_notifs_ids = last_notifs_ids + ")"
+        sql = "update notifications set seen=2 where id in {:s}".format(last_notifs_ids)
+        db.request(sql)
+
     success = 1
     return jsonify({'success': success, 'method': 'notifications/get_list', 'result': result})
 
@@ -1991,3 +2000,54 @@ def update_chat():
     success = 1
     return jsonify({'success': success, 'method': '/messages/update_chat', 'result': result})
 
+
+@app.route("/notifications/get_notif_count", methods=['POST'])
+def get_notif_count():
+    success = 0
+    result = {}
+
+    # authorize
+    token = request.json['token']
+    auth_result = auth_user(token)
+
+    # if not authorized - return immediately
+    if not auth_result['success']:
+        return jsonify({'success': success})
+
+    # authorized user id
+    user_id = auth_result['user_id']
+
+    db = shared.database()
+
+    # get all income messages that unread ( but exclude from who dislike or report me and from whom i dislike or report)
+    sql = """
+        select count(*) from messages where user_id_2=%s and seen=1
+        and not user_id_1 in (select user_id_2 from likes where user_id_1=%s and (action=2 or action=3))
+        and not user_id_1 in (select user_id_1 from likes where user_id_2=%s and (action=2 or action=3))
+    """
+    args = (user_id, user_id, user_id,)
+    db.request2(sql, args)
+
+    if db.getRowCount():
+        result['new_msg'] = db.getResult()[0]['count']
+    else: 
+        result['new_msg'] = 0
+
+
+
+    # get all income notifs that unread ( but exclude from who dislike or report me and from whom i dislike or report)
+    sql = """
+        select count(*) from notifications where user_id_2=%s and seen=1
+        and not user_id_1 in (select user_id_2 from likes where user_id_1=%s and (action=2 or action=3))
+        and not user_id_1 in (select user_id_1 from likes where user_id_2=%s and (action=2 or action=3))
+    """
+    args = (user_id, user_id, user_id,)
+    db.request2(sql, args)
+
+    if db.getRowCount():
+        result['new_notif'] = db.getResult()[0]['count']
+    else: 
+        result['new_notif'] = 0
+
+    success = 1
+    return jsonify({'success': success, 'method': '/messages/get_notif_count', 'result': result})

@@ -26,6 +26,7 @@ export class NotificationsComponent implements OnInit {
     this.notificationsService.getList(this.page).subscribe(response => {
         if (response['success'] == 1) {
             let result = response['result'];
+            console.log(result['notifications']);
             if (result['notifications'] == null) {
             	this.notifications = [];
             } else {
