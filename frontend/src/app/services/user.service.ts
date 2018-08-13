@@ -9,15 +9,18 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  register(email: string, password: string) {
+  register(username: string, fname: string, sname: string, email: string, password: string) {
 
 	const httpOptions = {
 	  headers: new HttpHeaders({
 	    'Content-Type':  'application/json'
 	  })
 	};
+	let args = {
+		'username': username, 'fname': fname, 'sname': sname, 'email': email, 'password': password
+	}
 
-	return this.http.post('http://127.0.0.1:8480/register', {'email': email, 'password': password});
+	return this.http.post('http://127.0.0.1:8480/register', args);
   }
 
   confirm(email_hash: string, confirm_hash: string) {

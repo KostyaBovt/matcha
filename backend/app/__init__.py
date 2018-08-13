@@ -23,17 +23,31 @@ def register():
     success = 0
     mailer = Mailer()
     hasher = Hasher()
+    db = shared.database()
 
-    email = request.json['email']
-    password = request.json['password']
+    input_error = 0
+
+    errors = {}
+
+    email = request.json.get('email')
+    username = request.json.get('username')
+    fname = request.json.get('fname')
+    sname = request.json.get('sname')
+    password = request.json.get('password')
+
+    if not email:
+        error['email'] = 'email must be specified'
+        input_error = 1   
+    else:
+        sql = "select * from users where email=%s"
+        args = (email,)
+        db.request2(sql, args)
+        if db.getRowCount():
+            error['email'] = 'This email is already in use'
+            input_error = 1
+
     password = hasher.hash_string(password)
 
-    db = shared.database()
-    sql = "select * from users where email=%s"
-    args = (email,)
-    db.request2(sql, args)
-    if db.getRowCount():
-        return jsonify({'success': 0, 'method': 'register'})
 
     sql = "insert into users (email, password, confirmed) values (%s, %s, 0) returning id"
     args = (email, password, )
@@ -1122,6 +1136,8 @@ def get_mate():
     # authorized user id
     user_id = auth_result['user_id']
 
+    to_log = int(request.json.get('to_log', 0))
+
     # get db
     db = shared.database()
 
@@ -1233,7 +1249,8 @@ def get_mate():
         result['action_to_user'] = None
 
     # finally log this action in notification table (action visit)
-    if (result['action_of_user'] != 2 and result['action_to_user'] != 2):
+
+    if (to_log and result['action_of_user'] != 2 and result['action_to_user'] != 2):
         sql = "insert into notifications (user_id_1, user_id_2, action) values ({:d}, {:d}, {:d});".format(user_id, mate_id, 40)
         db.request(sql, False)
 

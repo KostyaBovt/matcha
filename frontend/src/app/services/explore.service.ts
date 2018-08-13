@@ -14,9 +14,10 @@ export class ExploreService {
     return this.apiService.request('explore/search_connections', args);
   }
 
-  getMate(mate_id) {
+  getMate(mate_id, to_log) {
     let args = {
-      'mate_id': mate_id
+      'mate_id': mate_id,
+      'to_log': to_log
     }
     return this.apiService.request('explore/get_mate', args);
   }

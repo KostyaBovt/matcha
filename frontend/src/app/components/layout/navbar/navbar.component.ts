@@ -8,7 +8,7 @@ import { NotificationsService } from '../../../services/notifications.service';
 })
 export class NavbarComponent implements OnInit, OnDestroy {
 
-  notifCount: Object = {'new_notif': 1, 'new_msg': 0};
+  notifCount: Object = {'new_notif': 0, 'new_msg': 0};
   timeoutId: number = 0;
 
   constructor( private notificationsService: NotificationsService) { }

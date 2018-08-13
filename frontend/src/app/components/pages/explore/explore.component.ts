@@ -169,7 +169,7 @@ export class ExploreComponent implements OnInit {
 ////////// ############### this part is for mate account view
 
   showAccount(mate_id) {
-    this.exploreService.getMate(mate_id).subscribe(response => {
+    this.exploreService.getMate(mate_id, 1).subscribe(response => {
         if (response['success'] == 1) {
             console.log(response);
             this.account_shown = true;

@@ -42,7 +42,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
 		});
 
 		if (that.currentMateId) {
-		    that.exploreService.getMate(that.currentMateId).subscribe(response => {
+		    that.exploreService.getMate(that.currentMateId, 0).subscribe(response => {
 		        if (response['success'] == 1) {
 		            console.log(response);
 		            this.account_info = response['result'];
