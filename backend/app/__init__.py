@@ -18,6 +18,16 @@ def test_mail():
     mailer.send_register_confirm("recepient_name", "kostya.bovt@gmail.com", hasher.hash_string("kostya.bovt@gmail.com"), hasher.generate_hash(32))
     return "email is send!"
 
+
+def validate_email_exist(email):
+    from validate_email import validate_email
+    is_valid = validate_email(email, verify=True)
+    vdf({'is_valid': is_valid, 'email': email})
+    return is_valid
+
+def validate password(password):
+    return True
+
 @app.route("/register", methods=['POST'])
 def register():
     success = 0
@@ -35,16 +45,31 @@ def register():
     sname = request.json.get('sname')
     password = request.json.get('password')
 
+
+    # validate email
     if not email:
-        error['email'] = 'email must be specified'
+        errors['email'] = 'email must be specified'
         input_error = 1   
+    elif not validate_email_exist(email):
+        errors['email'] = 'email does not exist'
+        input_error = 1
     else:
         sql = "select * from users where email=%s"
         args = (email,)
         db.request2(sql, args)
         if db.getRowCount():
-            error['email'] = 'This email is already in use'
+            errors['email'] = 'This email is already in use'
             input_error = 1
+
+    if errors:
+        return jsonify({'success': success, 'method': 'register', 'errors': errors})
+
+    # validate password
+    if not password:
+        errors['password'] = 'password must be specified'
+        input_error = 1
+    elif
+
 
     password = hasher.hash_string(password)
 
