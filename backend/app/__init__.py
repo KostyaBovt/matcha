@@ -22,11 +22,34 @@ def test_mail():
 def validate_email_exist(email):
     from validate_email import validate_email
     is_valid = validate_email(email, verify=True)
-    vdf({'is_valid': is_valid, 'email': email})
     return is_valid
 
-def validate password(password):
-    return True
+def validate_password(password):
+    import re
+    pattern = r"^.(?=.{6,})(?=.[a-z])(?=.[A-Z])(?=.[\d\W]).*$"
+    pattern = re.compile(pattern)
+    # if re.match(r'[A-Za-z0-9\ \!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]{8,32}', password):
+    result = pattern.match(password)
+    result = result.groupdict()
+    # vdf(result, "re_result")
+    if result:
+        return True
+    else:
+        return False
+
+def validate_username(password):
+    import re
+    if re.match(r'[A-Za-z0-9\.\_\-]{1,32}', password):
+        return True
+    else:
+        return False
+
+def validate_name(password):
+    import re
+    if re.match(r'[A-Za-z\-]{1,32}', password):
+        return True
+    else:
+        return False
 
 @app.route("/register", methods=['POST'])
 def register():
@@ -61,18 +84,49 @@ def register():
             errors['email'] = 'This email is already in use'
             input_error = 1
 
-    if errors:
-        return jsonify({'success': success, 'method': 'register', 'errors': errors})
+    # validate username
+    if not username:
+        errors['username'] = 'username must be specified'
+        input_error = 1   
+    elif not validate_username(username):
+        errors['username'] = 'username is not valid'
+        input_error = 1
+    else:
+        sql = "select * from users_info where username=%s"
+        args = (username,)
+        db.request2(sql, args)
+        if db.getRowCount():
+            errors['username'] = 'This username is already in use'
+            input_error = 1
+
+    # validate fname
+    if not fname:
+        errors['fname'] = 'first name must be specified'
+        input_error = 1   
+    elif not validate_name(fname):
+        errors['fname'] = 'first name is not valid'
+        input_error = 1
+
+    # validate sname
+    if not sname:
+        errors['sname'] = 'second name must be specified'
+        input_error = 1   
+    elif not validate_name(sname):
+        errors['sname'] = 'second name is not valid'
+        input_error = 1
 
     # validate password
     if not password:
         errors['password'] = 'password must be specified'
         input_error = 1
-    elif
+    elif not validate_password(password):
+        errors['password'] = 'password is not secure enough'
+        input_error = 1        
 
+    if errors:
+        return jsonify({'success': success, 'method': 'register', 'errors': errors})
 
     password = hasher.hash_string(password)
-
 
     sql = "insert into users (email, password, confirmed) values (%s, %s, 0) returning id"
     args = (email, password, )
@@ -80,7 +134,7 @@ def register():
     user_id = db.getLastRowId()
 
     sql = "insert into users_info (user_id) values (%s) returning id"
-    args = (user_id)
+    args = (user_id,)
     db.request2(sql, args)
 
     email_hash = hasher.hash_string(email)
@@ -837,6 +891,7 @@ def search_mates():
 
     split_interests = [x.strip('\'\" ') for x in interests.split(',')]
     split_interests = [x for x in split_interests if x]
+    split_interests = split_interests + ['some_mock_interest_to_prevent_error']
 
     inline_interests = "('some_blank_interest_to_avoid_error'"
     counter = 1
@@ -1010,6 +1065,7 @@ def search_connections():
 
     split_interests = [x.strip('\'\" ') for x in interests.split(',')]
     split_interests = [x for x in split_interests if x]
+    split_interests = split_interests + ['some_mock_interest_to_prevent_error']
 
     inline_interests = "('some_blank_interest_to_avoid_error'"
     counter = 1
