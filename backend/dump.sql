@@ -5,7 +5,8 @@ CREATE TABLE users (
     id integer NOT NULL,
     email character varying(128) NOT NULL,
     password character varying(128) NOT NULL,
-    confirmed integer NOT NULL
+    confirmed integer DEFAULT 0 NOT NULL
+    filled integer DEFAULT 0 NOT NULL
 );
 
 ALTER TABLE ONLY users
@@ -351,5 +352,6 @@ ALTER TABLE users_info DROP column geo_lng;
 
 ALTER TABLE users_info ADD  geo_lat numeric(20,15);
 ALTER TABLE users_info ADD  geo_lng numeric(20,15);
+ALTER TABLE users ADD  filled integer DEFAULT 0 NOT NULL;
 
 

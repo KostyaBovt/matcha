@@ -26,27 +26,31 @@ def validate_email_exist(email):
 
 def validate_password(password):
     import re
-    pattern = r"^.(?=.{6,})(?=.[a-z])(?=.[A-Z])(?=.[\d\W]).*$"
-    pattern = re.compile(pattern)
-    # if re.match(r'[A-Za-z0-9\ \!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]{8,32}', password):
-    result = pattern.match(password)
-    result = result.groupdict()
-    # vdf(result, "re_result")
-    if result:
-        return True
-    else:
+    
+    result = re.match(r"^[A-Za-z0-9\ \!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]{8,32}$", password)
+    if not result:
         return False
+    if re.search('[0-9]',password) is None:
+        return False
+    if re.search('[a-z]',password) is None:
+        return False
+    if re.search('[A-Z]',password) is None:
+        return False
+    if re.search(r"[\ \!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]",password) is None:
+        return False
+
+    return True
 
 def validate_username(password):
     import re
-    if re.match(r'[A-Za-z0-9\.\_\-]{1,32}', password):
+    if re.match(r"^[A-Za-z0-9\.\_\-]{1,32}$", password):
         return True
     else:
         return False
 
 def validate_name(password):
     import re
-    if re.match(r'[A-Za-z\-]{1,32}', password):
+    if re.match(r"^[A-Za-z\-]{1,32}$", password):
         return True
     else:
         return False
@@ -133,8 +137,9 @@ def register():
     db.request2(sql, args)
     user_id = db.getLastRowId()
 
-    sql = "insert into users_info (user_id) values (%s) returning id"
-    args = (user_id,)
+    sql = "insert into users_info (user_id, username, fname, sname) values (%s, %s, %s, %s) returning id"
+
+    args = (user_id, username, fname, sname)
     db.request2(sql, args)
 
     email_hash = hasher.hash_string(email)
@@ -156,8 +161,9 @@ def confirm(email_hash, confirm_hash):
     db = shared.database()
     success = 0
 
-    sql = "select * from confirm where email_hash='{:s}' and confirm_hash='{:s}';".format(email_hash, confirm_hash)
-    db.request(sql)
+    sql = "select * from confirm where email_hash=%s and confirm_hash=%s;"
+    args = (email_hash, confirm_hash,)
+    db.request2(sql, args)
 
     if db.getRowCount():
         success = 1
@@ -172,32 +178,43 @@ def confirm(email_hash, confirm_hash):
 def forgot():
 
     success = 0
-    email = request.json['email']
+    email = request.json.get('email')
 
     db = shared.database()
 
-    sql = "select * from users where email=%s;"
-    args = (email,)
-    db.request2(sql, args)
+    # validate email
+    if not email:
+        errors['email'] = 'email must be specified'
+        input_error = 1   
+    else:
+        sql = "select * from users where email=%s"
+        args = (email,)
+        db.request2(sql, args)
+        if not db.getRowCount():
+            errors['email'] = 'No user with such email'
+            input_error = 1
+
+    if errors:
+        return jsonify({'success': success, 'method': 'register', 'errors': errors})
+
+
+    mailer = Mailer()
+    hasher = Hasher()
+    user_id = db.getResult()[0]['id']
+    email_hash = hasher.hash_string(email)
+    reset_hash = hasher.generate_hash(32)
+
+    sql = "select * from forgot where user_id='{:d}';".format(user_id)
+    db.request(sql)
 
     if db.getRowCount():
-        mailer = Mailer()
-        hasher = Hasher()
-        user_id = db.getResult()[0]['id']
-        email_hash = hasher.hash_string(email)
-        reset_hash = hasher.generate_hash(32)
-
-        sql = "select * from forgot where user_id='{:d}';".format(user_id)
-        db.request(sql)
-
-        if db.getRowCount():
-            sql = "update forgot set reset_hash='{:s}' where user_id={:d};".format(reset_hash, user_id)
-        else:
-            sql = "insert into forgot (user_id, email_hash, reset_hash) values ({:d},'{:s}', '{:s}') returning id".format(user_id, email_hash, reset_hash)
-        db.request(sql)
-        if not db.getError() and db.getRowCount() == 1:
-            success = 1
-            mailer.send_reset_password(email, email, email_hash, reset_hash)
+        sql = "update forgot set reset_hash='{:s}' where user_id={:d};".format(reset_hash, user_id)
+    else:
+        sql = "insert into forgot (user_id, email_hash, reset_hash) values ({:d},'{:s}', '{:s}') returning id".format(user_id, email_hash, reset_hash)
+    db.request(sql)
+    if not db.getError() and db.getRowCount() == 1:
+        success = 1
+        mailer.send_reset_password(email, email, email_hash, reset_hash)
 
     return jsonify({'success': success, 'method': 'forgot'})
 
