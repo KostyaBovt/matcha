@@ -179,6 +179,9 @@ def forgot():
 
     success = 0
     email = request.json.get('email')
+    input_error = 0
+    errors = {}
+
 
     db = shared.database()
 
@@ -195,7 +198,7 @@ def forgot():
             input_error = 1
 
     if errors:
-        return jsonify({'success': success, 'method': 'register', 'errors': errors})
+        return jsonify({'success': success, 'method': 'forgot', 'errors': errors})
 
 
     mailer = Mailer()
@@ -238,23 +241,60 @@ def check_reset(email_hash, reset_hash):
 def reset():
     success = 0
     hasher = Hasher()
+    input_error = 0
+    errors = {}
 
-    email_hash = request.json['email_hash']
-    reset_hash = request.json['reset_hash']
-    password = request.json['password']
-    password = hasher.hash_string(password)
-    repeat_password = request.json['repeat_password']
-    repeat_password = hasher.hash_string(repeat_password)
+    email = request.json.get('email')
 
-    if password != repeat_password:
-        return jsonify({'success': 0, 'method': 'reset'})
+    email_hash = request.json.get('email_hash')
+    reset_hash = request.json.get('reset_hash')
+    password = request.json.get('password')
+    repeat_password = request.json.get('repeat_password')
 
+
+    # validate email_hash
+    if not email_hash:
+        errors['email_hash'] = 'email_hash must be specified'
+        input_error = 1  
+
+    # validate reset_hash
+    if not reset_hash:
+        errors['reset_hash'] = 'reset_hash must be specified'
+        input_error = 1  
+
+    # check if hashes exist in db
     db = shared.database()
     sql = "select * from forgot where email_hash=%s and reset_hash= %s;"
     args = (email_hash, reset_hash,)
     db.request2(sql, args)
     if not db.getRowCount():
-        return jsonify({'success': 0, 'method': 'reset'})
+        errors['email_reset_hash'] = 'invalid email or/and reset hash'
+        input_error = 1 
+
+
+    # validate password
+    if not password:
+        errors['password'] = 'password must be specified'
+        input_error = 1
+    elif not validate_password(password):
+        errors['password'] = 'password is not secure enough'
+        input_error = 1 
+
+    # validate repeat_password
+    if not repeat_password:
+        errors['repeat_password'] = 'repeat_password must be specified'
+        input_error = 1
+
+    if password and repeat_password and password != repeat_password:
+        errors['repeat_password'] = 'repeat_password is not equal password'
+        input_error = 1 
+
+    if errors:
+        return jsonify({'success': success, 'method': 'reset', 'errors': errors})
+
+
+    password = hasher.hash_string(password)
+    repeat_password = hasher.hash_string(repeat_password)
 
     user_id = db.getResult()[0]['user_id']
     sql = "update users set password='{:s}' where id={:d}".format(password, user_id)
@@ -269,17 +309,36 @@ def reset():
 def login():
     success = 0
     hasher = Hasher()
+    input_error = 0
+    errors = {}
 
-    email = request.json['email']
-    password = request.json['password']
+    email = request.json.get('email')
+    password = request.json.get('password')
+
+
+    # validate email
+    if not email:
+        errors['email'] = 'email must be specified'
+        input_error = 1  
+
+    # validate password
+    if not password:
+        errors['password'] = 'password must be specified'
+        input_error = 1 
+
+    # validate if email and password exist
     password = hasher.hash_string(password)
-
     db = shared.database()
     sql = "select * from users where email=%s and password=%s and confirmed=1"
     args = (email, password,)
     db.request2(sql, args)
     if not db.getRowCount():
-        return jsonify({'success': 0, 'method': 'login'})
+        errors['email_password'] = 'email or password is wrong'
+        input_error = 1 
+
+    if errors:
+        return jsonify({'success': success, 'method': 'reset', 'errors': errors})
+
 
     user_id = db.getResult()[0]['id']
     sql = "select * from login where user_id={:d}".format(user_id)
@@ -397,9 +456,11 @@ def profile_get():
 def profile_update():
     success = 0
     result = []
+    input_error = 0
+    errors = {}
 
     # authorize
-    token = request.json['token']
+    token = request.json.get('token')
     auth_result = auth_user(token)
 
     # if not authorized - return immediately
@@ -409,17 +470,108 @@ def profile_update():
     # authorized user id
     user_id = auth_result['user_id']
 
-    username = request.json['username']
-    fname = request.json['fname']
-    sname = request.json['sname']
-    gender = 0 if not request.json['gender'] else int(request.json['gender'])
-    sex_preference = 0 if not request.json['sex_preference'] else int(request.json['sex_preference'])
-    birth = request.json['birth']
-    phone = request.json['phone']
-    bio = request.json['bio']
+    username = request.json.get('username')
+    fname = request.json.get('fname')
+    sname = request.json.get('sname')
+    gender = request.json.get('gender')
+    sex_preference = request.json.get('sex_preference')
+    birth = request.json.get('birth')
+    phone = request.json.get('phone')
+    bio = request.json.get('bio')
+    interests = request.json.get('interests')
+
 
     # get db
     db = shared.database()
+
+    # validate username
+    if not username:
+        errors['username'] = 'username must be specified'
+        input_error = 1
+    elif not validate_username(username):
+        errors['username'] = 'username is not valid'
+        input_error = 1
+    else:
+        sql = "select * from users_info where username=%s and not user_id=%s"
+        args = (username, user_id,)
+        db.request2(sql, args)
+        if db.getRowCount():
+            errors['username'] = 'This username is already in use'
+            input_error = 1
+
+    # validate fname
+    if not fname:
+        errors['fname'] = 'fname must be specified'
+        input_error = 1 
+    elif not validate_name(fname):
+        errors['fname'] = 'fname is not valid'
+        input_error = 1
+
+    # validate sname
+    if not sname:
+        errors['sname'] = 'sname must be specified'
+        input_error = 1
+    elif not validate_name(sname):
+        errors['sname'] = 'sname is not valid'
+        input_error = 1
+
+    # validate gender
+    if not gender:
+        errors['gender'] = 'gender must be specified'
+        input_error = 1 
+    elif not int(gender) in [1, 2]:
+        errors['gender'] = 'gender is not valid'
+        input_error = 1
+    else:
+        gender = int(gender)
+
+    # validate sex_preference
+    if not sex_preference:
+        errors['sex_preference'] = 'sex_preference must be specified'
+        input_error = 1
+    elif not int(sex_preference) in [1, 2, 3]:
+        errors['sex_preference'] = 'sex_preference is not valid'
+        input_error = 1
+    else:
+        sex_preference = int(sex_preference)
+
+    # validate birth
+    if not birth:
+        errors['birth'] = 'birth must be specified'
+        input_error = 1
+    elif birth > '2002-12-31':
+        errors['birth'] = 'birth date is too big'
+        input_error = 1 
+    elif birth < '1920-01-01':
+        errors['birth'] = 'birth date is too low'
+        input_error = 1 
+
+    # validate phone
+    if not phone:
+        errors['phone'] = 'phone must be specified'
+        input_error = 1
+    elif len(phone) > 16:
+        errors['phone'] = 'phone is too long'
+        input_error = 1
+
+
+    # validate bio
+    if not bio:
+        errors['bio'] = 'bio must be specified'
+        input_error = 1
+    elif len(phone) > 1000:
+        errors['phone'] = 'phone is too long'
+        input_error = 1
+
+
+    # validate interests
+    if not interests:
+        pass
+    elif len(interests) > 3000:
+        interests = interests[:3000]
+
+    if errors:
+        return jsonify({'success': success, 'method': '/profile/update', 'errors': errors})
 
     # update user info
     sql = """
@@ -439,7 +591,6 @@ def profile_update():
     db.request2(sql, args)
 
     # interests per request
-    interests = request.json['interests']
     split_interests = [x.strip('\'\" ') for x in interests.split(',')]
     split_interests = [x for x in split_interests if x]
 
