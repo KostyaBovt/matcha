@@ -33,7 +33,7 @@
 		<div class="row">
 			<div class="col-sm-3">Birth Day</div>
 			<div class="col-sm-4">
-				<input class="form-control" type="date" min="1920-01-01" max="2002-12-31" [ngModel]="birth | date:'yyyy-MM-dd'" (ngModelChange)="birth = $event" name="birth" required>
+				<input class="form-control" type="date" [ngModel]="birth | date:'yyyy-MM-dd'" (ngModelChange)="birth = $event" name="birth" required>
 			</div>
 		</div>
 		<div class="row">

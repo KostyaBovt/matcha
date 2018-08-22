@@ -337,7 +337,7 @@ def login():
         input_error = 1 
 
     if errors:
-        return jsonify({'success': success, 'method': 'reset', 'errors': errors})
+        return jsonify({'success': success, 'method': 'login', 'errors': errors})
 
 
     user_id = db.getResult()[0]['id']
@@ -535,14 +535,19 @@ def profile_update():
     else:
         sex_preference = int(sex_preference)
 
+
+    import datetime
+    if birth:
+        birth = datetime.datetime.strptime(birth, "%Y-%m-%d")
+
     # validate birth
     if not birth:
         errors['birth'] = 'birth must be specified'
         input_error = 1
-    elif birth > '2002-12-31':
+    elif birth > datetime.datetime.strptime('2002-12-31', "%Y-%m-%d"):
         errors['birth'] = 'birth date is too big'
         input_error = 1 
-    elif birth < '1920-01-01':
+    elif birth < datetime.datetime.strptime('1920-01-01', "%Y-%m-%d"):
         errors['birth'] = 'birth date is too low'
         input_error = 1 
 
@@ -559,9 +564,8 @@ def profile_update():
     if not bio:
         errors['bio'] = 'bio must be specified'
         input_error = 1
-    elif len(phone) > 1000:
-        errors['phone'] = 'phone is too long'
-        input_error = 1
+    elif len(bio) > 1000:
+        bio = bio[:1000]
 
 
     # validate interests
@@ -658,6 +662,12 @@ def profile_update():
             first = False
         db.request(sql, return_id_flag=False)
 
+    # finally mark profile as 'filled'
+    sql = "update users set filled=2 where id=%s"
+    args = (user_id,)
+    db.request2(sql, args,)
+
+
     if not db.getError():
         success = 1
 
@@ -668,6 +678,10 @@ def profile_update():
 def profile_update_password():
     success = 0
     result = []
+    input_error = 0
+    errors = {}
+
+
 
     # get db and hasher
     db = shared.database()
@@ -684,24 +698,45 @@ def profile_update_password():
     # authorized user id
     user_id = auth_result['user_id']
 
-    password = request.json['password']
-    new_password  = request.json['new_password']
-    repeate_password  = request.json['repeate_password']
+    password = request.json.get('password')
+    new_password  = request.json.get('new_password')
+    repeat_password  = request.json.get('repeate_password')
 
-    # if repeate password != new password - return immediately
-    if new_password is not repeate_password:
-        return jsonify({'success': success})
 
-    # validate current password
-    sql = """
-        select * from users
-        where id={:d} and password='{:s}'
-    """.format(user_id, hasher.hash_string(password))
-    db.request(sql)
+    if not password:
+        errors['password'] = 'password must be specified'
+        input_error = 1
+    else:
+        # validate current password
+        sql = """
+            select * from users
+            where id={:d} and password='{:s}'
+        """.format(user_id, hasher.hash_string(password))
+        db.request(sql)
 
-    # return immediately if not validated
-    if not db.getRowCount():
-        return jsonify({'success': success})
+        if not db.getRowCount():
+            errors['password'] = 'password is wrong'
+            input_error = 1 
+
+
+    if not new_password:
+        errors['new_password'] = 'new_password must be specified'
+        input_error = 1
+    elif not validate_password(new_password):
+        errors['new_password'] = 'new_password is not secure enough'
+        input_error = 1 
+
+    # validate repeat_password
+    if not repeat_password:
+        errors['repeat_password'] = 'repeat_password must be specified'
+        input_error = 1
+
+    if new_password and repeat_password and new_password != repeat_password:
+        errors['repeat_password'] = 'repeat_password is not equal new_password'
+        input_error = 1 
+
+    if errors:
+        return jsonify({'success': success, 'method': '/profile/update_password', 'errors': errors})
 
     # insert new password
     sql = """
@@ -718,6 +753,8 @@ def profile_update_password():
 def profile_update_email():
     success = 0
     result = []
+    input_error = 0
+    errors = {}
 
     # get db
     db = shared.database()
@@ -735,18 +772,25 @@ def profile_update_email():
     # authorized user id
     user_id = auth_result['user_id']
 
-    new_email = request.json['new_email']
-    
-    #check if email already exist
-    sql = """
-        select * from users where email=%s
-    """
-    args = (new_email,)
-    db.request2(sql, args)
+    new_email = request.json.get('new_email')
 
-    if db.getRowCount():
-        # if email already exist - return immediately
-        return jsonify({'success': success})
+    # validate new_email
+    if not new_email:
+        errors['new_email'] = 'new_email must be specified'
+        input_error = 1   
+    elif not validate_email_exist(new_email):
+        errors['new_email'] = 'new_email does not exist'
+        input_error = 1
+    else:
+        sql = "select * from users where email=%s and not id=%s"
+        args = (new_email, user_id,)
+        db.request2(sql, args)
+        if db.getRowCount():
+            errors['new_email'] = 'This email is already in use'
+            input_error = 1
+
+    if errors:
+        return jsonify({'success': success, 'method': '/profile/update_email', 'errors': errors})
 
     # if hash for email update confirm for current user already exist - delete it
     sql = """delete from email_update where user_id={:d}""".format(user_id)
@@ -799,6 +843,8 @@ def confirm_update_email():
 def profile_upload_photo():
     success = 0
     result = []
+    input_error = 0
+    errors = {}
 
     # authorize
     token = request.json['token']
@@ -832,6 +878,17 @@ def profile_upload_photo():
     photo_path = '/vagrant/backend/data/photos'
     filesaver.save_file(value=photo_value, name=photo_hash, extention="jpeg", path=photo_path)
 
+    # validate saved image by Pillow library
+    from PIL import Image
+    try:
+        Image.open(photo_path + "/" + photo_hash + ".jpeg")
+    except IOError:
+        errors['photo'] = 'invalid photo format'
+        input_error = 1
+        os.remove(photo_path + "/" + photo_hash + ".jpeg")
+
+    if errors:
+        return jsonify({'success': success, 'method': '/profile/upload_photo', 'errors': errors})
 
     #insert new photo to db
     sql = """
@@ -929,18 +986,24 @@ def delete_photo():
 
     # authorized user id
     user_id = auth_result['user_id']
-
+    photo_hash = request.json.get('photo_hash')
 
     # get db
     db = shared.database()
 
-    # actually delete photo
-    photo_hash = request.json['photo_hash']
-    sql = "delete from photos where user_id=%s and hash=%s"
-    agrs = (user_id, photo_hash,)
+    # delete the photo  if it is actually user`s photo
+    sql = "select * from photos where user_id=%s and hash=%s"
+    args = (user_id, photo_hash,)
     db.request2(sql, args)
 
-    os.remove("/vagrant/backend/data/photos/" + photo_hash + ".jpeg")
+    if db.getRowCount():
+        sql = "delete from photos where user_id=%s and hash=%s"
+        args = (user_id, photo_hash,)
+        db.request2(sql, args)
+
+        # actually delete photo
+        os.remove("/vagrant/backend/data/photos/" + photo_hash + ".jpeg")
+
 
     success = 1
     return jsonify({'success': success, 'method': 'profile/delete_photo'})

@@ -6,7 +6,7 @@ CREATE TABLE users (
     email character varying(128) NOT NULL,
     password character varying(128) NOT NULL,
     confirmed integer DEFAULT 0 NOT NULL
-    filled integer DEFAULT 0 NOT NULL
+    filled integer DEFAULT 1 NOT NULL
 );
 
 ALTER TABLE ONLY users
@@ -314,7 +314,7 @@ ALTER TABLE ONLY photos
 
 -- DATA INSERT
 insert into users (id, email, password, confirmed) values (48, 'kostya.bovt@gmail.com', 'c4ca4238a0b923820dcc509a6f75849b', 1);
-insert into users (id, email, password, confirmed) values (100, 'some.email@gmail.com', 'c4ca4238a0b923820dcc509a6f75849b', 1);
+insert into users (id, email, password, confirmed) values (100, 'iguanakostya@ua.fm', 'c4ca4238a0b923820dcc509a6f75849b', 1);
 
 insert into users_info (user_id, username, fname, sname, birth, gender, sex_preference, phone, bio) values (48, 'Dobro', 'Kostia', 'Bovt', '1990-12-16', 1, 2, '+380997741343', 'Hello we can meet in the park and walk a dog');
 insert into users_info (user_id, username, fname, sname, birth, gender, sex_preference, phone, bio) values (100, 'Sweety', 'Angela', 'Maldini', '1996-04-23', 2, 3, '+380937776655', 'I am pretty girl and wnat to mmet my boy');
@@ -352,6 +352,7 @@ ALTER TABLE users_info DROP column geo_lng;
 
 ALTER TABLE users_info ADD  geo_lat numeric(20,15);
 ALTER TABLE users_info ADD  geo_lng numeric(20,15);
-ALTER TABLE users ADD  filled integer DEFAULT 0 NOT NULL;
 
+ALTER TABLE users DROP column filled;
+ALTER TABLE users ADD  filled integer DEFAULT 1 NOT NULL;
 

@@ -52,6 +52,19 @@ export class ModifyComponent implements OnInit {
          return age;
   }
 
+  private formatDateToString(date) {
+      let day = date.getDate();
+      if (day < 10 ) {
+        day = "0" + day;
+      }
+      let monthIndex = date.getMonth() + 1;
+      if (monthIndex < 10) {
+        monthIndex = "0" + monthIndex;
+      }
+      let year = date.getFullYear();
+      return year + '-' + monthIndex + '-' + day;
+  }
+
   ngOnInit() {
     this.profileService.get().subscribe(response => {
         if (response['success'] == 1) {
@@ -66,7 +79,7 @@ export class ModifyComponent implements OnInit {
             this.phone = result['phone'];
             this.bio = result['bio'];
             this.interests = result['interests'];
-            this.birth = result['birth'];
+            this.birth = this.formatDateToString(new Date(result['birth']));
         }
     });
   }
@@ -85,6 +98,9 @@ export class ModifyComponent implements OnInit {
     this.profileService.updatePassword(this.password, this.new_password, this.repeate_password).subscribe(response => {
         if (response['success'] == 1) {
             this.passwordUpdated = 1;
+            this.password = "";
+            this.new_password = "";
+            this.repeate_password = "";
         } else {
             this.passwordUpdated = 2;
         }
