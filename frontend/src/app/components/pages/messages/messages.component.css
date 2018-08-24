@@ -1,9 +1,11 @@
 .left-align {
 	float: left;
+	background-color: #c7d8e0;
 }
 
 .right-align {
 	float: right;
+	background-color: #d6ead3;
 }
 
 .message {
@@ -43,4 +45,9 @@
 .prev-loader:hover {
 	text-decoration: underline;
 	cursor: pointer;
+}
+
+.mdate {
+	font-size: 13px;
+	color: grey;
 }

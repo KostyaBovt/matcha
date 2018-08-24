@@ -46,14 +46,25 @@ export class ExploreComponent implements OnInit {
   account_info: Object = {};
   current_main_photo: string = '';
 
+  filled: number = 2;
+  avatar: number = 1;
+
+
   constructor(private http: HttpClient, private profileService: ProfileService, private exploreService: ExploreService) { }
 
   ngOnInit() {
     this.profileService.get().subscribe(response => {
         if (response['success'] == 1) {
             let result = response['result'];
+            console.log(result);
+            this.filled = result['filled'];
+            if (!result['avatar']) {
+              this.avatar = 0;
+            }
+
 
             this.sex_preference = result['sex_preference'];
+
             if (this.sex_preference == 1) {
             	this.man = true;
             } else if (this.sex_preference == 2) {

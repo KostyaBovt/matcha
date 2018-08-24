@@ -312,13 +312,13 @@ def login():
     input_error = 0
     errors = {}
 
-    email = request.json.get('email')
-    password = request.json.get('password', '')
+    username = request.json.get('username')
+    password = request.json.get('password', '').encode('utf8')
 
 
     # validate email
-    if not email:
-        errors['email'] = 'email must be specified'
+    if not username:
+        errors['username'] = 'username must be specified'
         input_error = 1  
 
     # validate password
@@ -327,21 +327,27 @@ def login():
         input_error = 1 
 
     # validate if email and password valid
-    if password and email:
+    if password and username:
         password = hasher.hash_string(password)
         db = shared.database()
-        sql = "select * from users where email=%s and password=%s and confirmed=1"
-        args = (email, password,)
+        sql = """
+            select users.*, users_info.*
+            from users
+            inner join users_info on users.id=users_info.user_id
+            where users_info.username=%s
+            and users.password=%s
+            and confirmed=1"""
+        args = (username, password,)
         db.request2(sql, args)
         if not db.getRowCount():
-            errors['email_password'] = 'email or password is wrong'
+            errors['username_password'] = 'username or password is wrong'
             input_error = 1 
 
     if errors:
         return jsonify({'success': success, 'method': 'login', 'errors': errors})
 
 
-    user_id = db.getResult()[0]['id']
+    user_id = db.getResult()[0]['user_id']
     sql = "select * from login where user_id={:d}".format(user_id)
     db.request(sql)
 
@@ -412,12 +418,13 @@ def profile_get():
     
     # get user_info
     sql = """
-        select users.*, users_info.*
+        select users.*, users_info.*, avatar_count.avatar
         from users
         inner join users_info
         on users.id = users_info.user_id
+        left join (select avatar, user_id from photos where user_id={:d} and avatar=1) as avatar_count on avatar_count.user_id = users.id
         where users.id='{:d}'
-    """.format(user_id)
+    """.format(user_id, user_id)
 
     db.request(sql)
     if db.getRowCount():
@@ -699,7 +706,7 @@ def profile_update_password():
     # authorized user id
     user_id = auth_result['user_id']
 
-    password = request.json.get('password')
+    password = request.json.get('password').encode('utf8')
     new_password  = request.json.get('new_password')
     repeat_password  = request.json.get('repeat_password')
 
@@ -1335,7 +1342,7 @@ def search_connections():
          END as online_status
         from users
         inner join users_info on users.id = users_info.user_id
-        inner join
+        left join
             (select user_id, name as "avatar_name" 
             from photos
             where photos.avatar = 1) as avatars_table
@@ -1432,7 +1439,10 @@ def search_connections():
             item['rating'] = str(item['rating'])
             item['geo_lat'] = str(item['geo_lat'])
             item['geo_lng'] = str(item['geo_lng'])
-            item['avatar_src'] = base64.b64encode(filesaver.read_file(item['avatar_name'], '/vagrant/backend/data/photos'))
+            if item['avatar_name']:
+                item['avatar_src'] = base64.b64encode(filesaver.read_file(item['avatar_name'], '/vagrant/backend/data/photos'))
+            else :
+                item['avatar_src'] = base64.b64encode(filesaver.read_file('blank-avatar.jpg', '/vagrant/backend/data'))
     elif not db.getError():
         success = 1
         return jsonify({'success': success, 'result': None})
@@ -1540,12 +1550,15 @@ def get_mate():
     db.request2(sql, args)
     photos = []
     avatar = ''
-    if db.getRowCount() and not db.getError():
+    if db.getRowCount():
         result_photos = db.getResult()
         for result_photo in result_photos:
             photos.append({'src': base64.b64encode(filesaver.read_file(result_photo['name'], '/vagrant/backend/data/photos'))})
             if result_photo['avatar'] == 1:
                 avatar = {'src': base64.b64encode(filesaver.read_file(result_photo['name'], '/vagrant/backend/data/photos'))}
+    elif not db.getRowCount() and not db.getError():
+        photos.append({'src': base64.b64encode(filesaver.read_file('blank-avatar.jpg', '/vagrant/backend/data'))})
+        avatar = {'src': base64.b64encode(filesaver.read_file('blank-avatar.jpg', '/vagrant/backend/data'))}
     elif db.getError():
         success = 0
         return jsonify({'success': success, 'result': None})
@@ -2175,7 +2188,10 @@ def get_mate_list():
             ELSE messages_table.user_id_1
             END as user_id_mate
         from (
-            select * from messages where (user_id_1=%s or user_id_2=%s) 
+            select * from messages where (
+                (user_id_1=%s and user_id_2 in (select user_id_2 from likes where user_id_1=%s and action=1 and user_id_2 in (select user_id_1 from likes where user_id_2=%s and action=1)))
+                or (user_id_2=%s and user_id_1 in (select user_id_2 from likes where user_id_1=%s and action=1 and user_id_2 in (select user_id_1 from likes where user_id_2=%s and action=1)))
+            ) 
         ) as messages_table
         inner join users_info on
             CASE WHEN messages_table.user_id_1 = %s THEN messages_table.user_id_2 = users_info.user_id
@@ -2184,7 +2200,7 @@ def get_mate_list():
         group by user_id_mate, users_info.username, users_info.fname, users_info.sname
         order by max(action_time)
     """
-    args = (user_id, user_id, user_id, user_id, user_id,)
+    args = (user_id, user_id, user_id, user_id, user_id, user_id, user_id, user_id, user_id,)
     db.request2(sql, args)
 
     if db.getRowCount():
@@ -2284,7 +2300,10 @@ def update_chat():
             ELSE messages_table.user_id_1
             END as user_id_mate
         from (
-            select * from messages where (user_id_1=%s or user_id_2=%s) 
+            select * from messages where (
+                (user_id_1=%s and user_id_2 in (select user_id_2 from likes where user_id_1=%s and action=1 and user_id_2 in (select user_id_1 from likes where user_id_2=%s and action=1)))
+                or (user_id_2=%s and user_id_1 in (select user_id_2 from likes where user_id_1=%s and action=1 and user_id_2 in (select user_id_1 from likes where user_id_2=%s and action=1)))
+            ) 
         ) as messages_table
         inner join users_info on
             CASE WHEN messages_table.user_id_1 = %s THEN messages_table.user_id_2 = users_info.user_id
@@ -2293,7 +2312,7 @@ def update_chat():
         group by user_id_mate, users_info.username, users_info.fname, users_info.sname
         order by max(action_time)
     """
-    args = (user_id, mate_id, user_id, user_id, user_id, user_id,)
+    args = (user_id, mate_id, user_id, user_id, user_id, user_id, user_id, user_id, user_id, user_id,)
     db.request2(sql, args)
 
     if db.getRowCount():

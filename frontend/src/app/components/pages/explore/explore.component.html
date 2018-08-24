@@ -53,7 +53,7 @@
 			  <label class="form-check-label" for="inlineCheckbox1">Only online users</label>
 			</div>
 			<div>
-				<button type="submit" class="btn">Search</button>
+				<button type="submit" class="btn" [disabled]="filled == 1 || !avatar">Search</button>
 			</div>
 
 
@@ -62,6 +62,8 @@
 	<div class="col-sm-8">
 		<div>
 			<h6 class="d-sm-inline-block">SEARCH RESULTS:</h6>
+			<h6 *ngIf="filled == 1">To searh mates, please fill you profile: <button type="button" class="btn btn-primary" routerLink="/profile/modify" >profile modify</button></h6>
+			<h6 *ngIf="!avatar">To searh mates, please add photo: <button type="button" class="btn btn-primary" routerLink="/profile/photos" >profile photos</button></h6>
 			<div *ngIf="finded_mates.length > 0 || page > 1" class="d-sm-inline-block paginator">
 				<button type="button" class="btn btn-primary" (click)="prevPage()" [disabled]="page == 1">Prev</button>
 				Page: {{page}}
@@ -138,7 +140,7 @@
 			<div *ngIf="account_info.action_to_user == 3" class="alert alert-danger" role="alert"> This person reported you. You will not see he/she anewhere anymore and no actions aviable</div>
 <!-- 			<div class="alert alert-dark" role="alert"> You disliked this person</div>-->
 
-			<button *ngIf="account_info.action_of_user == 1 && account_info.action_to_user == 1" type="button" class="btn btn-success" (click)="goToMessages(account_info.user_id)" >Message</button>
+			<button *ngIf="account_info.action_of_user == 1 && account_info.action_to_user == 1" type="button" class="btn btn-success" routerLink="/messages/{{account_info.user_id}}" >Message</button>
 
 			<button *ngIf="!account_info.action_of_user  && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-success" (click)="likeFromAccount(account_info.user_id)" >Like</button>
 			<button *ngIf="account_info.action_of_user == 1 && (!account_info.action_to_user || account_info.action_to_user == 1)" type="button" class="btn btn-secondary" (click)="unlikeFromAccount(account_info.user_id)" >UnLike</button>

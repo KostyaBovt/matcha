@@ -1,17 +1,18 @@
 <div class="row">
 	<div class="col-sm-3">
+		<div *ngIf="!mateList">no chats yet...</div>
 		<div *ngFor="let mateListItem of mateList" routerLink="/messages/{{mateListItem.user_id_mate}}" class="mate">{{mateListItem.username}} <span  *ngIf="mateListItem.count" class="red">{{mateListItem.count}}</span></div>
 	</div>
 	<div class="col-sm-9">
-		<div>timeout_id: {{timeoutId}}</div>
+<!-- 		<div>timeout_id: {{timeoutId}}</div>
 		<div>number_of_prev_messages_prepended: {{number_of_prev_messages_prepended}}</div>
-		<div>currentMateId: {{currentMateId}}</div>
+		<div>currentMateId: {{currentMateId}}</div> -->
 
-		<h6>chat with: {{account_info.username}}</h6>
-		<div class="message-box">
+		<h6 *ngIf="currentMateId">chat with: {{account_info.username}}</h6>
+		<div *ngIf="currentMateId" class="message-box">
 			<div *ngIf="number_of_prev_messages_prepended > 19" class="prev-loader" (click)="loadPrevMessages()" >...load previous messanges...</div>
 			<div *ngFor="let current_message of currentMateChat" class="message">
-				<div [ngClass]="{'left-align': current_message.direction == 2, 'right-align': current_message.direction == 1}" >[{{current_message.id}}] - {{current_message.message}} - {{current_message.action_time | date : 'medium'}}</div>
+				<div [ngClass]="{'left-align': current_message.direction == 2, 'right-align': current_message.direction == 1}" >{{current_message.message}} <span class="mdate">{{current_message.action_time | date : 'medium'}}</span></div>
 			</div>
 		</div>
 

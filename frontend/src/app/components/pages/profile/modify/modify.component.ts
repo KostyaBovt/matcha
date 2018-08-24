@@ -44,6 +44,10 @@ export class ModifyComponent implements OnInit {
   errors_password: Object = {};
   errors_email: Object = {};
 
+  updating_info: number = 0;
+  updating_email: number = 0;
+  updating_password: number = 0;
+
   constructor(private profileService: ProfileService) { }
 
   private calucateAge(dateString) {
@@ -104,11 +108,14 @@ export class ModifyComponent implements OnInit {
 
   updateInfo() {
     this.infoUpdated = 0;
+    this.updating_info = 1;
     this.profileService.update(this.username, this.fname, this.sname, this.gender, this.sex_preference, this.birth, this.phone, this.bio, this.interests).subscribe(response => {
         if (response['success'] == 1) {
+            this.updating_info = 0;
             this.infoUpdated = 1;
             this.errors_info = {};
         } else {
+          this.updating_info = 0;
             this.infoUpdated = 2;
             if (response['errors']) {
               this.errors_info = response['errors'];
@@ -119,8 +126,10 @@ export class ModifyComponent implements OnInit {
 
   updatePassword() {
     this.passwordUpdated = 0;
+    this.updating_password = 1;
     this.profileService.updatePassword(this.password, this.new_password, this.repeat_password).subscribe(response => {
         if (response['success'] == 1) {
+            this.updating_password = 0;
             this.passwordUpdated = 1;
             this.password = "";
             this.new_password = "";
@@ -131,21 +140,25 @@ export class ModifyComponent implements OnInit {
               this.errors_password = response['errors'];
             }
             this.passwordUpdated = 2;
+            this.updating_password = 0;
         }
     });
   }
 
   updateEmail() {
     this.emailConfirmSent = 0;
+    this.updating_email = 1;
     this.profileService.updateEmail(this.email).subscribe(response => {
         if (response['success'] == 1) {
             this.emailConfirmSent = 1;
+            this.updating_email = 0;
             this.errors_email = {};
         } else {
             if (response['errors']) {
               this.errors_email = response['errors'];
             }
             this.emailConfirmSent = 2;
+            this.updating_email = 0;
         }
     });
   }

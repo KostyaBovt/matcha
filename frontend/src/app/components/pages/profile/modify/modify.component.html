@@ -74,6 +74,7 @@
 			<button type="submit" class="btn">Update</button>
 			<div *ngIf="infoUpdated == 1">info was updated</div>
 			<div *ngIf="infoUpdated == 2">error while updating</div>
+			<i *ngIf="updating_info" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
 		</div>
 	</form>	
 
@@ -92,6 +93,7 @@
 			<button type="submit" class="btn">Update</button>
 			<div *ngIf="emailConfirmSent == 1">Check your new email to confirm email update</div>
 			<div *ngIf="emailConfirmSent == 2">error while updating</div>
+			<i *ngIf="updating_email" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
 		</div>
 	</form>	
 
@@ -124,6 +126,7 @@
 		</div>
 		<div>
 			<button type="submit" class="btn">Update</button>
+			<i *ngIf="updating_password" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
 			<div *ngIf="passwordUpdated == 1">password was updated</div>
 			<div *ngIf="passwordUpdated == 2">error while updating</div>
 		</div>

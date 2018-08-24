@@ -68,7 +68,7 @@ export class UserService {
 	return this.http.post('http://127.0.0.1:8480/reset', post_vars);
   }
 
-  login(email: string, password: string) {
+  login(username: string, password: string) {
 
 	const httpOptions = {
 	  headers: new HttpHeaders({
@@ -76,7 +76,7 @@ export class UserService {
 	  })
 	};
 
-	let post_vars = {'email': email, 'password': password};
+	let post_vars = {'username': username, 'password': password};
 	return this.http.post('http://127.0.0.1:8480/login', post_vars);
   }
 
