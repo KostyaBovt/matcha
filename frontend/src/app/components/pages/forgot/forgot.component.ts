@@ -10,6 +10,8 @@ export class ForgotComponent implements OnInit {
   sended: string;
   email: string;
 
+  errors: Object = {};
+
   constructor(public userService: UserService) { }
 
   ngOnInit() {
@@ -21,8 +23,10 @@ export class ForgotComponent implements OnInit {
     this.userService.sendForgot(this.email).subscribe(response => {
       if (response['success'] == 1) {
         this.sended = 'Check you email to reset password';
-        this.email = ''
+        this.email = '';
+        this.errors = {};
       } else {
+        this.errors = response['errors'];
         this.sended = 'Something went wrong...Check the email.';
       }
     });

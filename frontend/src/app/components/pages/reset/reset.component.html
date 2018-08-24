@@ -1,18 +1,26 @@
-<div class="row">
+<div *ngIf="is_allowed" class="row">
 	<button routerLink="/login" type="button" class="btn btn-info">Back to Login</button>
 </div>
-<div class="row">
+<div *ngIf="is_allowed" class="row">
 	<div class="col-sm-4"></div>
 	<div class="col-sm-4">
 		<h2>RESET PASSWORD</h2>
 		<form (ngSubmit)="reset()" #resetForm="ngForm">
 			<div class="row">
 				<div class="col-sm-6">New Password</div>
-				<div class="col-sm-6"><input name="password" type="password" [(ngModel)]="password"></div>
+				<div class="col-sm-6">
+					<div *ngIf="errors['password']" class="myerror">{{errors['password']}}</div>
+					<div *ngIf="active['password']" class="mytooltip">at least one uppercase, one lowercase, one number and one  symbol from !"#$%&'()*+,-./:;<=>?@[\]^_ `|&#123;&#125;~</div>
+					<input name="password" type="password" [(ngModel)]="password" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+				</div>
 			</div>
 			<div class="row">
 				<div class="col-sm-6">Repeat New Password</div>
-				<div class="col-sm-6"><input name="repeat_password" type="password" [(ngModel)]="repeat_password"></div>
+				<div class="col-sm-6">
+					<div *ngIf="errors['repeat_password']" class="myerror">{{errors['repeat_password']}}</div>
+					<div *ngIf="active['repeat_password']" class="mytooltip">must repeat pasword</div>
+					<input name="repeat_password" type="password" [(ngModel)]="repeat_password" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+				</div>
 			</div>
 			<div><button type="submit" class="btn">Confirm</button></div>
 		</form>
@@ -20,4 +28,4 @@
 	</div>
 	<div class="col-sm-4"></div>
 </div>
-
+{{message_init}}

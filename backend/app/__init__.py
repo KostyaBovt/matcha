@@ -313,7 +313,7 @@ def login():
     errors = {}
 
     email = request.json.get('email')
-    password = request.json.get('password')
+    password = request.json.get('password', '')
 
 
     # validate email
@@ -326,15 +326,16 @@ def login():
         errors['password'] = 'password must be specified'
         input_error = 1 
 
-    # validate if email and password exist
-    password = hasher.hash_string(password)
-    db = shared.database()
-    sql = "select * from users where email=%s and password=%s and confirmed=1"
-    args = (email, password,)
-    db.request2(sql, args)
-    if not db.getRowCount():
-        errors['email_password'] = 'email or password is wrong'
-        input_error = 1 
+    # validate if email and password valid
+    if password and email:
+        password = hasher.hash_string(password)
+        db = shared.database()
+        sql = "select * from users where email=%s and password=%s and confirmed=1"
+        args = (email, password,)
+        db.request2(sql, args)
+        if not db.getRowCount():
+            errors['email_password'] = 'email or password is wrong'
+            input_error = 1 
 
     if errors:
         return jsonify({'success': success, 'method': 'login', 'errors': errors})
@@ -473,8 +474,8 @@ def profile_update():
     username = request.json.get('username')
     fname = request.json.get('fname')
     sname = request.json.get('sname')
-    gender = request.json.get('gender')
-    sex_preference = request.json.get('sex_preference')
+    gender = int(request.json.get('gender', '0'))
+    sex_preference = int(request.json.get('sex_preference', '0'))
     birth = request.json.get('birth')
     phone = request.json.get('phone')
     bio = request.json.get('bio')
@@ -700,7 +701,7 @@ def profile_update_password():
 
     password = request.json.get('password')
     new_password  = request.json.get('new_password')
-    repeat_password  = request.json.get('repeate_password')
+    repeat_password  = request.json.get('repeat_password')
 
 
     if not password:
@@ -872,6 +873,10 @@ def profile_upload_photo():
     if not db.getRowCount():
         avatar = 1
 
+
+    raw_photo = request.json.get('photoValue')
+    if not raw_photo:
+        return jsonify({'success': success})
     photo_value = base64.b64decode(request.json['photoValue'])
     photo_hash = hasher.generate_hash(32)
     photo_extention = 'jpeg'
@@ -1107,7 +1112,11 @@ def search_mates():
         return jsonify({'success': success})
 
     # unpack request parameters
-    interests = request.json['interests']
+    interests = request.json.get('interests')
+
+    if interests and len(interests) > 3000:
+        interests = interests[:3000]
+
     sort = request.json['sort']
     sort = sort.split('_')
     bottomAge = int(request.json['bottomAge'])
@@ -1277,7 +1286,11 @@ def search_connections():
         return jsonify({'success': success})
 
     # unpack request parameters
-    interests = request.json['interests']
+    interests = request.json.get('interests')
+
+    if interests and len(interests) > 3000:
+        interests = interests[:3000]
+
     sort = request.json['sort']
     sort = sort.split('_')
     bottomAge = int(request.json['bottomAge'])

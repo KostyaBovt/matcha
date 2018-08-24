@@ -4,20 +4,33 @@
 		<div><h4>Update personal information</h4></div>
 		<div class="row">
 			<div class="col-sm-3">Username</div>
-			<div class="col-sm-4"><input class="form-control" name="username" type="text" [(ngModel)]="username"></div>
+			<div class="col-sm-4">
+				<div *ngIf="errors_info['username']" class="myerror">{{errors_info['username']}}</div>
+				<div *ngIf="active['username']" class="mytooltip">only letters and symbols . - _</div>				
+				<input class="form-control" name="username" type="text" [(ngModel)]="username" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">First name</div>
-			<div class="col-sm-4"><input class="form-control" name="fname" type="text" [(ngModel)]="fname"></div>
+			<div class="col-sm-4">
+				<div *ngIf="errors_info['fname']" class="myerror">{{errors_info['fname']}}</div>
+				<div *ngIf="active['fname']" class="mytooltip">only letters and symbol -</div>			
+				<input class="form-control" name="fname" type="text" [(ngModel)]="fname" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">Second Name</div>
-			<div class="col-sm-4"><input class="form-control" name="sname" type="text" [(ngModel)]="sname"></div>
+			<div class="col-sm-4">
+				<div *ngIf="errors_info['sname']" class="myerror">{{errors_info['sname']}}</div>
+				<div *ngIf="active['sname']" class="mytooltip">only letters and symbol -</div>			
+				<input class="form-control" name="sname" type="text" [(ngModel)]="sname" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">Gender</div>
 			<div class="col-sm-4">
-				<select class="form-control" [(ngModel)]="gender" name="gender">
+				<div *ngIf="errors_info['gender']" class="myerror">{{errors_info['gender']}}</div>
+				<select class="form-control" [(ngModel)]="gender" name="gender" >
 					<option *ngFor="let gender_list_item of gender_list" [value]="gender_list_item.value">{{gender_list_item.name}}</option>
 				</select>
 			</div>
@@ -25,6 +38,7 @@
 		<div class="row">
 			<div class="col-sm-3">Sex preference</div>
 			<div class="col-sm-4">
+				<div *ngIf="errors_info['sex_preference']" class="myerror">{{errors_info['sex_preference']}}</div>
 				<select class="form-control" [(ngModel)]="sex_preference" name="sex_preference">
 					<option *ngFor="let prefer_list_item of prefer_list" [value]="prefer_list_item.value">{{prefer_list_item.name}}</option>
 				</select>
@@ -33,16 +47,24 @@
 		<div class="row">
 			<div class="col-sm-3">Birth Day</div>
 			<div class="col-sm-4">
-				<input class="form-control" type="date" [ngModel]="birth | date:'yyyy-MM-dd'" (ngModelChange)="birth = $event" name="birth" required>
+				<div *ngIf="errors_info['birth']" class="myerror">{{errors_info['birth']}}</div>
+				<div *ngIf="active['birth']" class="mytooltip">between 1920 and 2002</div>			
+				<input class="form-control" type="date" [ngModel]="birth | date:'yyyy-MM-dd'" (ngModelChange)="birth = $event" name="birth" required (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">Phone</div>
-			<div class="col-sm-4"><input class="form-control" name="phone" type="text" [(ngModel)]="phone"></div>
+			<div class="col-sm-4">
+				<div *ngIf="errors_info['phone']" class="myerror">{{errors_info['phone']}}</div>
+				<input class="form-control" name="phone" type="text" [(ngModel)]="phone">
+			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">Bio</div>
-			<div class="col-sm-4"><textarea maxlength="1000" class="form-control" name="bio" type="text" [(ngModel)]="bio"></textarea></div>
+			<div class="col-sm-4">
+				<div *ngIf="errors_info['bio']" class="myerror">{{errors_info['bio']}}</div>
+				<textarea maxlength="1000" class="form-control" name="bio" type="text" [(ngModel)]="bio"></textarea>
+			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">Interests</div>
@@ -61,7 +83,10 @@
 		<div><h4>Update email</h4></div>
 		<div class="row">
 			<div class="col-sm-3">Email</div>
-			<div class="col-sm-4"><input class="form-control" name="email" type="text" [(ngModel)]="email"></div>
+			<div class="col-sm-4">
+				<div *ngIf="errors_email['new_email']" class="myerror">{{errors_email['new_email']}}</div>
+				<input class="form-control" name="email" type="text" [(ngModel)]="email">
+			</div>
 		</div>
 		<div>
 			<button type="submit" class="btn">Update</button>
@@ -76,15 +101,26 @@
 		<div><h4>Update password</h4></div>
 		<div class="row">
 			<div class="col-sm-3">Old password</div>
-			<div class="col-sm-4"><input class="form-control" name="password" type="password" [(ngModel)]="password"></div>
+			<div class="col-sm-4">
+				<div *ngIf="errors_password['password']" class="myerror">{{errors_password['password']}}</div>
+				<input class="form-control" name="password" type="password" [(ngModel)]="password">
+			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">New Password</div>
-			<div class="col-sm-4"><input class="form-control" name="new_password" type="password" [(ngModel)]="new_password"></div>
+			<div class="col-sm-4">
+				<div *ngIf="errors_password['new_password']" class="myerror">{{errors_password['new_password']}}</div>
+				<div *ngIf="active['new_password']" class="mytooltip">at least one uppercase, one lowercase, one number and one  symbol from !"#$%&'()*+,-./:;<=>?@[\]^_ `|&#123;&#125;~</div>
+				<input class="form-control" name="new_password" type="password" [(ngModel)]="new_password" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-3">Repeate New Password</div>
-			<div class="col-sm-4"><input class="form-control" name="repeate_password" type="password" [(ngModel)]="repeate_password"></div>
+			<div class="col-sm-4">
+				<div *ngIf="errors_password['repeat_password']" class="myerror">{{errors_password['repeat_password']}}</div>
+				<div *ngIf="active['repeat_password']" class="mytooltip">must repeat password</div>				
+				<input class="form-control" name="repeat_password" type="password" [(ngModel)]="repeat_password" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+			</div>
 		</div>
 		<div>
 			<button type="submit" class="btn">Update</button>

@@ -8,28 +8,48 @@
 		<form (ngSubmit)="register()" #registerForm="ngForm">
 			<div class="row">
 				<div class="col-sm-6">Email</div>
-				<div class="col-sm-6"><input class="form-control" name="email" type="text" [(ngModel)]="email"></div>
+				<div class="col-sm-6">
+					<div *ngIf="errors['email']" class="myerror">{{errors['email']}}</div>
+					<input  class="form-control" name="email" type="text" [(ngModel)]="email">
+				</div>
 			</div>
 			<div class="row">
 				<div class="col-sm-6">Username</div>
-				<div class="col-sm-6"><input class="form-control" name="username" type="text" [(ngModel)]="username"></div>
+				<div class="col-sm-6">
+					<div *ngIf="errors['username']" class="myerror">{{errors['username']}}</div>
+					<div *ngIf="active['username']" class="mytooltip">only letters and symbols . - _</div>
+					<input class="form-control" name="username" type="text" [(ngModel)]="username" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+				</div>
 			</div>
 			<div class="row">
 				<div class="col-sm-6">First name</div>
-				<div class="col-sm-6"><input class="form-control" name="fname" type="text" [(ngModel)]="fname"></div>
+				<div class="col-sm-6">
+					<div *ngIf="errors['fname']" class="myerror">{{errors['fname']}}</div>
+					<div *ngIf="active['fname']" class="mytooltip">only letters and symbol -</div>
+					<input class="form-control" name="fname" type="text" [(ngModel)]="fname" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+				</div>
 			</div>
 			<div class="row">
 				<div class="col-sm-6">Second name</div>
-				<div class="col-sm-6"><input class="form-control" name="sname" type="text" [(ngModel)]="sname"></div>
+				<div class="col-sm-6">
+					<div *ngIf="errors['sname']" class="myerror">{{errors['sname']}}</div>
+					<div *ngIf="active['sname']" class="mytooltip" >only letters and symbol -</div>
+					<input class="form-control" name="sname" type="text" [(ngModel)]="sname" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+				</div>
 			</div>
 			<div class="row">
 				<div class="col-sm-6">Password</div>
-				<div class="col-sm-6"><input class="form-control" name="password" type="password" [(ngModel)]="password"></div>
+				<div class="col-sm-6">
+					<div *ngIf="errors['password']" class="myerror">{{errors['password']}}</div>
+					<div *ngIf="active['password']" class="mytooltip">at least one uppercase, one lowercase, one number and one  symbol from !"#$%&'()*+,-./:;<=>?@[\]^_ `|&#123;&#125;~</div>
+					<input class="form-control" name="password" type="password" [(ngModel)]="password" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
+				</div>
 			</div>
-			<div><button type="submit" class="btn">Register</button></div>
+			<div><button type="submit" class="btn" placement="right" ngbTooltip="Tooltip on right">Register</button></div>
 		</form>
 		<h3>{{ registered }}</h3>
 	</div>
-	<div class="col-sm-3"></div>
+	<div class="col-sm-3">
+	</div>
 </div>
 

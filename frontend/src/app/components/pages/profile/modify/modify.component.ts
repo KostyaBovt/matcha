@@ -34,10 +34,15 @@ export class ModifyComponent implements OnInit {
 
   password: string;
   new_password: string;
-  repeate_password: string;
+  repeat_password: string;
 
   passwordUpdated: number = 0;
   emailConfirmSent: number = 0;
+
+  active: Object = {};
+  errors_info: Object = {};
+  errors_password: Object = {};
+  errors_email: Object = {};
 
   constructor(private profileService: ProfileService) { }
 
@@ -66,6 +71,19 @@ export class ModifyComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.active['username'] = 0;
+    this.active['fname'] = 0;
+    this.active['sname'] = 0;
+    this.active['birth'] = 0;
+    this.active['bio'] = 0;
+    this.active['interests'] = 0;
+
+    this.active['email'] = 0;
+
+    this.active['password'] = 0;
+    this.active['new_password'] = 0;
+    this.active['repeat_password'] = 0;
+
     this.profileService.get().subscribe(response => {
         if (response['success'] == 1) {
             let result = response['result'];
@@ -85,36 +103,60 @@ export class ModifyComponent implements OnInit {
   }
 
   updateInfo() {
+    this.infoUpdated = 0;
     this.profileService.update(this.username, this.fname, this.sname, this.gender, this.sex_preference, this.birth, this.phone, this.bio, this.interests).subscribe(response => {
         if (response['success'] == 1) {
             this.infoUpdated = 1;
+            this.errors_info = {};
         } else {
             this.infoUpdated = 2;
+            if (response['errors']) {
+              this.errors_info = response['errors'];
+            }
         }
     });
   }
 
   updatePassword() {
-    this.profileService.updatePassword(this.password, this.new_password, this.repeate_password).subscribe(response => {
+    this.passwordUpdated = 0;
+    this.profileService.updatePassword(this.password, this.new_password, this.repeat_password).subscribe(response => {
         if (response['success'] == 1) {
             this.passwordUpdated = 1;
             this.password = "";
             this.new_password = "";
-            this.repeate_password = "";
+            this.repeat_password = "";
+            this.errors_password = {};
         } else {
+            if (response['errors']) {
+              this.errors_password = response['errors'];
+            }
             this.passwordUpdated = 2;
         }
     });
   }
 
   updateEmail() {
+    this.emailConfirmSent = 0;
     this.profileService.updateEmail(this.email).subscribe(response => {
         if (response['success'] == 1) {
             this.emailConfirmSent = 1;
+            this.errors_email = {};
         } else {
+            if (response['errors']) {
+              this.errors_email = response['errors'];
+            }
             this.emailConfirmSent = 2;
         }
     });
   }
+
+  onFocus(event) {
+    this.active[event.target.name] = 1;
+  }
+
+  onFocusOut(event) {
+    this.active[event.target.name] = 0;
+  }
+
 
 }

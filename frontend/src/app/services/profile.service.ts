@@ -38,12 +38,12 @@ export class ProfileService {
   updatePassword(
   	password: string,
 	new_password: string,
-	repeate_password: string
+	repeat_password: string
   ) {
   	let args = {
   		'password': password,
 		'new_password': new_password,
-		'repeate_password': repeate_password
+		'repeat_password': repeat_password
   	}
   	return this.apiService.request('profile/update_password', args)
   }

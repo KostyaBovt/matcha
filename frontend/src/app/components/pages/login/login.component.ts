@@ -4,7 +4,8 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
   email: string;
@@ -46,6 +47,7 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
+    this.message = '';
     this.userService.login(this.email, this.password).subscribe(response => {
       if (response['success'] == 1) {
         this.email = "";

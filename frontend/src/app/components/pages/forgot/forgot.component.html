@@ -9,7 +9,10 @@
 		<form (ngSubmit)="sendForgot()" #forgotForm="ngForm">
 			<div class="row">
 				<div class="col-sm-6">Email</div>
-				<div class="col-sm-6"><input name="email" type="text" [(ngModel)]="email"></div>
+				<div class="col-sm-6">
+					<div *ngIf="errors['email']" class="myerror">{{errors['email']}}</div>
+					<input name="email" type="text" [(ngModel)]="email">
+				</div>
 			</div>
 			<div><button type="submit" class="btn">Send</button></div>
 		</form>
