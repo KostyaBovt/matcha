@@ -19,6 +19,6 @@
 		<div *ngIf="currentMateId" class="align-bottom">
 			<textarea class="form-control" [(ngModel)]="messageInput" ></textarea>
 		</div>
-		<button *ngIf="currentMateId" type="button" class="btn btn-primary" (click)="sendMsg()">Send</button>
+		<button *ngIf="currentMateId" type="button" class="btn btn-primary" (click)="sendMsg()" [disabled]="!messageInput">Send</button>
 	</div>
 </div>

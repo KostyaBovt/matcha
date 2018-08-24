@@ -2380,11 +2380,10 @@ def get_notif_count():
 
     db = shared.database()
 
-    # get all income messages that unread ( but exclude from who dislike or report me and from whom i dislike or report)
+    # get all income messages that unread ( but only from connected users)
     sql = """
         select count(*) from messages where user_id_2=%s and seen=1
-        and not user_id_1 in (select user_id_2 from likes where user_id_1=%s and (action=2 or action=3))
-        and not user_id_1 in (select user_id_1 from likes where user_id_2=%s and (action=2 or action=3))
+        and user_id_1 in (select user_id_2 from likes where user_id_1=%s and action=1 and user_id_2 in (select user_id_1 from likes where user_id_2=%s and action=1))
     """
     args = (user_id, user_id, user_id,)
     db.request2(sql, args)

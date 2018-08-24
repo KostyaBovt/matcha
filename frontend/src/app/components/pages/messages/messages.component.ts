@@ -111,17 +111,19 @@ export class MessagesComponent implements OnInit, OnDestroy {
 	    	this.firstMsgId = this.currentMateChat[0]['id'];
 	    }
 
-		this.messageService.sendMsg(this.currentMateId, this.messageInput, this.firstMsgId).subscribe(response => {
-			if (response['success'] == 1) {
-				let result = response['result'];
-				console.log(result);
-				this.currentMateChat = this.currentMateChat.concat(result['new_messages']); 
-				console.log(this.currentMateChat);
-				this.messageInput = '';
-			} else {
-				alert('Some error!');
-			}
-		});
+	    if (this.messageInput) {
+			this.messageService.sendMsg(this.currentMateId, this.messageInput, this.firstMsgId).subscribe(response => {
+				if (response['success'] == 1) {
+					let result = response['result'];
+					console.log(result);
+					this.currentMateChat = this.currentMateChat.concat(result['new_messages']); 
+					console.log(this.currentMateChat);
+					this.messageInput = '';
+				} else {
+					alert('Some error!');
+				}
+			});
+	    }
 	}
 
 	loadPrevMessages() {

@@ -10,7 +10,15 @@ import { ExploreService } from '../../../services/explore.service';
 })
 export class ExploreComponent implements OnInit {
   man: boolean = false;
+  man_hetero: boolean = false;
+  man_homo: boolean = false;
+  man_bi: boolean = false;
+
   woman: boolean = false;
+  woman_hetero: boolean = false;
+  woman_lesbi: boolean = false;
+  woman_bi: boolean = false;
+
   online: boolean = false;
 
   bottomAge: number = 18;
@@ -35,6 +43,7 @@ export class ExploreComponent implements OnInit {
 
   sort: string= "match_desc";
   sex_preference: number;
+  gender: number;
   age: number;
 
   page: number = 1;
@@ -64,15 +73,9 @@ export class ExploreComponent implements OnInit {
 
 
             this.sex_preference = result['sex_preference'];
+            this.gender = result['gender'];
 
-            if (this.sex_preference == 1) {
-            	this.man = true;
-            } else if (this.sex_preference == 2) {
-            	this.woman = true;
-            } else {
-            	this.man = true;
-            	this.woman = true;            	
-            }
+            this.initSexFilters(this.gender, this.sex_preference);
 
             this.interests = result['interests'];
 
@@ -82,6 +85,84 @@ export class ExploreComponent implements OnInit {
 
         }
     });
+  }
+
+  initSexFilters(gender, sex_preference) {
+    if (gender == 1) {
+
+      if (sex_preference == 1) {
+
+        this.man = true;
+        this.man_hetero = false;
+        this.man_homo = true;
+        this.man_bi = true;
+        this.woman = false;
+        this.woman_hetero = false;
+        this.woman_lesbi = false;
+        this.woman_bi = false;
+
+      } else if (sex_preference == 2) {
+
+        this.man = false;
+        this.man_hetero = false;
+        this.man_homo = false;
+        this.man_bi = false;
+        this.woman = true;
+        this.woman_hetero = true;
+        this.woman_lesbi = false;
+        this.woman_bi = true;        
+
+      } else { // if sex_preference == 3
+
+        this.man = true;
+        this.man_hetero = false;
+        this.man_homo = true;
+        this.man_bi = true;
+        this.woman = true;
+        this.woman_hetero = true;
+        this.woman_lesbi = false;
+        this.woman_bi = true;        
+
+      }
+ 
+
+    } else { // if gender == 2
+
+      if (sex_preference == 1) {
+
+        this.man = true;
+        this.man_hetero = true;
+        this.man_homo = false;
+        this.man_bi = true;
+        this.woman = false;
+        this.woman_hetero = false;
+        this.woman_lesbi = false;
+        this.woman_bi = false;
+
+      } else if (sex_preference == 2) {
+
+        this.man = false;
+        this.man_hetero = false;
+        this.man_homo = false;
+        this.man_bi = false;
+        this.woman = true;
+        this.woman_hetero = false;
+        this.woman_lesbi = true;
+        this.woman_bi = true;        
+
+      } else { // if sex_preference == 3
+
+        this.man = true;
+        this.man_hetero = true;
+        this.man_homo = false;
+        this.man_bi = true;
+        this.woman = true;
+        this.woman_hetero = false;
+        this.woman_lesbi = true;
+        this.woman_bi = true;        
+
+      }
+    }
   }
 
   setBottomAge(bottomAge) {
@@ -111,8 +192,14 @@ export class ExploreComponent implements OnInit {
 
   searchMates() {
   	let args = {
-		'man': this.man,
-		'woman': this.woman,
+    'man': this.man, 
+    'man_hetero': this.man_hetero, 
+    'man_homo': this.man_homo, 
+    'man_bi': this.man_bi, 
+    'woman': this.woman, 
+    'woman_hetero': this.woman_hetero, 
+    'woman_lesbi': this.woman_lesbi, 
+    'woman_bi': this.woman_bi,  
 		'bottomAge': this.bottomAge,
 		'upperAge': this.upperAge,
 		'bottomRating': this.bottomRating,
