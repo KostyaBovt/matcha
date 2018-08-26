@@ -86,15 +86,17 @@
 		</form>
 	</div>
 	<div class="col-sm-8">
-		<div>
-			<h6 class="d-sm-inline-block">SEARCH RESULTS:</h6>
-			<h6 *ngIf="filled == 1">To searh mates, please fill you profile: <button type="button" class="btn btn-primary" routerLink="/profile/modify" >profile modify</button></h6>
-			<h6 *ngIf="!avatar">To searh mates, please add photo: <button type="button" class="btn btn-primary" routerLink="/profile/photos" >profile photos</button></h6>
-			<div *ngIf="finded_mates.length > 0 || page > 1" class="d-sm-inline-block paginator">
+		<div class="row">
+			<div class="col-sm-6"><h6 class="d-sm-inline-block">SEARCH RESULTS:</h6></div>
+			<div *ngIf="finded_mates.length > 0 || page > 1" class="d-sm-inline-block paginator col-sm-6">
 				<button type="button" class="btn btn-primary" (click)="prevPage()" [disabled]="page == 1">Prev</button>
 				Page: {{page}}
 				<button type="button" class="btn btn-primary" (click)="nextPage()" >Next</button>
 			</div>
+		</div>
+		<div class="row">
+			<h6 *ngIf="filled == 1">To searh mates, please fill you profile: <button type="button" class="btn btn-primary" routerLink="/profile/modify" >profile modify</button></h6>
+			<h6 *ngIf="!avatar">To searh mates, please add photo: <button type="button" class="btn btn-primary" routerLink="/profile/photos" >profile photos</button></h6>
 		</div>
 		<div class="mate" *ngFor="let mate of finded_mates">
 			<div class="row">
@@ -103,7 +105,6 @@
 						<img class="fitdiv" src="data:image/jpeg;base64,{{mate.avatar_src}}">
 						<div *ngIf="mate.online_status"> online </div>
 						<div *ngIf="!mate.online_status"> offline </div>
-						<div> id: {{mate.user_id}} </div>
 					</div>
 				</div>
 				<div class="col-sm-5">
