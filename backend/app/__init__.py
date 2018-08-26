@@ -1130,11 +1130,19 @@ def search_mates():
     upperAge = int(request.json['upperAge'])
     bottomRating = float(request.json['bottomRating'])
     upperRating = float(request.json['upperRating'])
-    woman = request.json['woman']
-    man = request.json['man']
     online = request.json['online']
     radius = float(request.json['radius'])
     offset = (int(request.json['page']) - 1) * 10
+
+    man = request.json.get('man')
+    man_hetero = request.json.get('man_hetero')
+    man_homo = request.json.get('man_homo')
+    man_bi = request.json.get('man_bi')
+    woman = request.json.get('woman')
+    woman_hetero = request.json.get('woman_hetero')
+    woman_lesbi = request.json.get('woman_lesbi')
+    woman_bi = request.json.get('woman_bi')
+
 
     split_interests = [x.strip('\'\" ') for x in interests.split(',')]
     split_interests = [x for x in split_interests if x]
@@ -1194,10 +1202,46 @@ def search_mates():
         and users_info.geo_lng is not null
         and distance < {:f}\n""".format(user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, user_id, radius)
 
-    if (man and not woman):
-        sql = sql + '\t\tand users_info.gender=1\n'
-    if (woman and not man):
-        sql = sql + '\t\tand users_info.gender=2\n'
+
+
+    man_sql = ''
+    woman_sql = ''
+
+    if man:
+        if not man_hetero and not man_homo and not man_bi:
+            man_sql = 'users_info.gender=1'
+        else:
+            pref_tuple = ()
+            if man_hetero:
+                pref_tuple += (2,)
+            if man_homo:
+                pref_tuple += (1,)
+            if man_bi:
+                pref_tuple += (3,)
+            man_sql = 'users_info.gender=1 and users_info.sex_preference in %s' % (pref_tuple,)
+            if len(pref_tuple) == 1:
+                man_sql = man_sql.replace(",", "")
+    if woman:
+        if not woman_hetero and not woman_lesbi and not woman_bi:
+            woman_sql = 'users_info.gender=2'
+        else:
+            pref_tuple = ()
+            if woman_hetero:
+                pref_tuple += (1,)
+            if woman_lesbi:
+                pref_tuple += (2,)
+            if woman_bi:
+                pref_tuple += (3,)
+            woman_sql = 'users_info.gender=2 and users_info.sex_preference in %s' % (pref_tuple, )
+            if len(pref_tuple) == 1:
+                woman_sql = woman_sql.replace(",", "")
+
+    if man_sql and woman_sql:
+        sql = sql + '\t\tand ((%s) OR (%s))\n' % (man_sql, woman_sql,)
+    elif man_sql:
+        sql = sql + '\t\t and %s\n' % (man_sql,)        
+    elif woman_sql:
+        sql = sql + '\t\t and %s\n' % (woman_sql,)
 
     sql = sql + '\t\tand users_info.rating * 100 >= {:f}\n'.format(bottomRating)
     sql = sql + '\t\tand users_info.rating * 100 <= {:f}\n'.format(upperRating)
@@ -1304,8 +1348,6 @@ def search_connections():
     upperAge = int(request.json['upperAge'])
     bottomRating = float(request.json['bottomRating'])
     upperRating = float(request.json['upperRating'])
-    woman = request.json['woman']
-    man = request.json['man']
     online = request.json['online']
     radius = float(request.json['radius'])
     offset = (int(request.json['page']) - 1) * 10
@@ -1313,6 +1355,15 @@ def search_connections():
     i_dislike_flag = request.json['i_dislike_flag']
     like_me_flag = request.json['like_me_flag']
     connections_flag = request.json['connections_flag']
+
+    man = request.json.get('man')
+    man_hetero = request.json.get('man_hetero')
+    man_homo = request.json.get('man_homo')
+    man_bi = request.json.get('man_bi')
+    woman = request.json.get('woman')
+    woman_hetero = request.json.get('woman_hetero')
+    woman_lesbi = request.json.get('woman_lesbi')
+    woman_bi = request.json.get('woman_bi')
 
     split_interests = [x.strip('\'\" ') for x in interests.split(',')]
     split_interests = [x for x in split_interests if x]
@@ -1387,12 +1438,46 @@ def search_connections():
         sql = sql + """\t\tand users.id in (select user_id_1 from likes where user_id_2={:d} and action=1 and user_id_1 not in (select user_id_2 from likes where user_id_1={:d} and (action=2 or action=3 or action=1)))\n""".format(user_id, user_id)
 
     if (connections_flag):
-        sql = sql + """and users.id in (select user_id_2 from likes where user_id_1={:d} and action=1 and user_id_2 in (select user_id_1 from likes where user_id_2={:d} and action=1))""".format(user_id, user_id)
+        sql = sql + """\t\tand users.id in (select user_id_2 from likes where user_id_1={:d} and action=1 and user_id_2 in (select user_id_1 from likes where user_id_2={:d} and action=1))\n""".format(user_id, user_id)
 
-    if (man and not woman):
-        sql = sql + '\t\tand users_info.gender=1\n'
-    if (woman and not man):
-        sql = sql + '\t\tand users_info.gender=2\n'
+    man_sql = ''
+    woman_sql = ''
+
+    if man:
+        if not man_hetero and not man_homo and not man_bi:
+            man_sql = 'users_info.gender=1'
+        else:
+            pref_tuple = ()
+            if man_hetero:
+                pref_tuple += (2,)
+            if man_homo:
+                pref_tuple += (1,)
+            if man_bi:
+                pref_tuple += (3,)
+            man_sql = 'users_info.gender=1 and users_info.sex_preference in %s' % (pref_tuple,)
+            if len(pref_tuple) == 1:
+                man_sql = man_sql.replace(",", "")
+    if woman:
+        if not woman_hetero and not woman_lesbi and not woman_bi:
+            woman_sql = 'users_info.gender=2'
+        else:
+            pref_tuple = ()
+            if woman_hetero:
+                pref_tuple += (1,)
+            if woman_lesbi:
+                pref_tuple += (2,)
+            if woman_bi:
+                pref_tuple += (3,)
+            woman_sql = 'users_info.gender=2 and users_info.sex_preference in %s' % (pref_tuple, )
+            if len(pref_tuple) == 1:
+                woman_sql = woman_sql.replace(",", "")
+
+    if man_sql and woman_sql:
+        sql = sql + '\t\tand ((%s) OR (%s))\n' % (man_sql, woman_sql,)
+    elif man_sql:
+        sql = sql + '\t\t and %s\n' % (man_sql,)        
+    elif woman_sql:
+        sql = sql + '\t\t and %s\n' % (woman_sql,)
 
     sql = sql + '\t\tand users_info.rating * 100 >= {:f}\n'.format(bottomRating)
     sql = sql + '\t\tand users_info.rating * 100 <= {:f}\n'.format(upperRating)

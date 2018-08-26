@@ -9,8 +9,16 @@ import { ExploreService } from '../../../services/explore.service';
   styleUrls: ['./connections.component.css']
 })
 export class ConnectionsComponent implements OnInit {
-  man: boolean = true;
-  woman: boolean = true;
+  man: boolean = false;
+  man_hetero: boolean = false;
+  man_homo: boolean = false;
+  man_bi: boolean = false;
+
+  woman: boolean = false;
+  woman_hetero: boolean = false;
+  woman_lesbi: boolean = false;
+  woman_bi: boolean = false;
+
   online: boolean = false;
   connections_flag: boolean = true;
   i_like_flag: boolean = false;
@@ -104,8 +112,14 @@ export class ConnectionsComponent implements OnInit {
 
   searchConnections() {
   	let args = {
-		'man': this.man,
-		'woman': this.woman,
+    'man': this.man, 
+    'man_hetero': this.man_hetero, 
+    'man_homo': this.man_homo, 
+    'man_bi': this.man_bi, 
+    'woman': this.woman, 
+    'woman_hetero': this.woman_hetero, 
+    'woman_lesbi': this.woman_lesbi, 
+    'woman_bi': this.woman_bi,  
 		'bottomAge': this.bottomAge,
 		'upperAge': this.upperAge,
 		'bottomRating': this.bottomRating,

@@ -2,13 +2,38 @@
 	<div class="col-sm-4">
 		<form  #exploreForm="ngForm" (ngSubmit)="searchConnectionsInitial()">
 			<div><h6>SEARCH FILTERS:</h6></div>
-			<div class="form-check form-check-inline">
+			<div class="form-check form-check">
 			  <input class="form-check-input" type="checkbox" id="man" [checked]="man" (change)="man = !man">
 			  <label class="form-check-label" for="man">Man</label>
 			</div>
-			<div class="form-check form-check-inline">
+			<div *ngIf="man" class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="man_hetero" [checked]="man_hetero" (change)="man_hetero = !man_hetero">
+			  <label class="form-check-label" for="man_hetero">Hetero</label>
+			</div>
+			<div *ngIf="man" class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="man_homo" [checked]="man_homo" (change)="man_homo = !man_homo">
+			  <label class="form-check-label" for="man_homo">Homo</label>
+			</div>
+			<div *ngIf="man" class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="man_bi" [checked]="man_bi" (change)="man_bi = !man_bi">
+			  <label class="form-check-label" for="man_bi">Bi</label>
+			</div>
+			
+			<div class="form-check form-check">
 			  <input class="form-check-input" type="checkbox" id="woman" [checked]="woman" (change)="woman = !woman">
 			  <label class="form-check-label" for="woman">Woman</label>
+			</div>
+			<div *ngIf="woman" class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="woman_hetero" [checked]="woman_hetero" (change)="woman_hetero = !woman_hetero">
+			  <label class="form-check-label" for="woman_hetero">Hetero</label>
+			</div>
+			<div *ngIf="woman" class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="woman_lesbi" [checked]="woman_lesbi" (change)="woman_lesbi = !woman_lesbi">
+			  <label class="form-check-label" for="woman_lesbi">Lesbi</label>
+			</div>
+			<div *ngIf="woman" class="form-check form-check-inline">
+			  <input class="form-check-input" type="checkbox" id="woman_bi" [checked]="woman_bi" (change)="woman_bi = !woman_bi">
+			  <label class="form-check-label" for="woman_bi">Bi</label>
 			</div>
 
 		    <div class="form-group">
