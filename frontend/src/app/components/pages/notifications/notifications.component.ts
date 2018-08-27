@@ -26,7 +26,7 @@ export class NotificationsComponent implements OnInit {
     this.notificationsService.getList(this.page).subscribe(response => {
         if (response['success'] == 1) {
             let result = response['result'];
-            console.log(result['notifications']);
+            // console.log(result['notifications']);
             if (result['notifications'] == null) {
             	this.notifications = [];
             } else {
@@ -49,7 +49,7 @@ export class NotificationsComponent implements OnInit {
   showAccount(mate_id) {
     this.exploreService.getMate(mate_id, 1).subscribe(response => {
         if (response['success'] == 1) {
-            console.log(response);
+            // console.log(response);
             this.account_shown = true;
             this.account_shown_id = mate_id;
             this.account_info = response['result'];
@@ -73,7 +73,7 @@ export class NotificationsComponent implements OnInit {
   likeFromAccount(mate_id) {
     this.exploreService.like(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(1, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -84,7 +84,7 @@ export class NotificationsComponent implements OnInit {
   unlikeFromAccount(mate_id) {
     this.exploreService.unlike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(null, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -95,7 +95,7 @@ export class NotificationsComponent implements OnInit {
   dislikeFromAccount(mate_id) {
     this.exploreService.dislike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(2, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -106,7 +106,7 @@ export class NotificationsComponent implements OnInit {
   undislikeFromAccount(mate_id) {
     this.exploreService.undislike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(null, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -119,7 +119,7 @@ export class NotificationsComponent implements OnInit {
     } else {
       this.exploreService.report(mate_id).subscribe(response => {
           if (response['success'] == 1) {
-            console.log(response);
+            // console.log(response);
             this.updateActions(3, response['result']['action_to_user']);
           } else {
             alert('some error');

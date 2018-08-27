@@ -65,7 +65,7 @@ export class ExploreComponent implements OnInit {
     this.profileService.get().subscribe(response => {
         if (response['success'] == 1) {
             let result = response['result'];
-            console.log(result);
+            // console.log(result);
             this.filled = result['filled'];
             if (!result['avatar']) {
               this.avatar = 0;
@@ -212,7 +212,7 @@ export class ExploreComponent implements OnInit {
   	}
     this.exploreService.searchMates(args).subscribe(response => {
         if (response['success'] == 1) {
-            console.log(response);
+            // console.log(response);
             this.finded_mates = response['result'];
             if (response['result'] == null) {
               this.finded_mates = [];
@@ -269,7 +269,7 @@ export class ExploreComponent implements OnInit {
   showAccount(mate_id) {
     this.exploreService.getMate(mate_id, 1).subscribe(response => {
         if (response['success'] == 1) {
-            console.log(response);
+            // console.log(response);
             this.account_shown = true;
             this.account_shown_id = mate_id;
             this.account_info = response['result'];
@@ -294,7 +294,7 @@ export class ExploreComponent implements OnInit {
   likeFromAccount(mate_id) {
     this.exploreService.like(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(1, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -305,7 +305,7 @@ export class ExploreComponent implements OnInit {
   unlikeFromAccount(mate_id) {
     this.exploreService.unlike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(null, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -316,7 +316,7 @@ export class ExploreComponent implements OnInit {
   dislikeFromAccount(mate_id) {
     this.exploreService.dislike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(2, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -327,7 +327,7 @@ export class ExploreComponent implements OnInit {
   undislikeFromAccount(mate_id) {
     this.exploreService.undislike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(null, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -340,7 +340,7 @@ export class ExploreComponent implements OnInit {
     } else {
       this.exploreService.report(mate_id).subscribe(response => {
           if (response['success'] == 1) {
-            console.log(response);
+            // console.log(response);
             this.updateActions(3, response['result']['action_to_user']);
           } else {
             alert('some error');

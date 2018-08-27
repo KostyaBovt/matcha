@@ -42,7 +42,7 @@ export class PhotosComponent implements OnInit {
             // this.photoUploaded = 2;
         }
     }, error => {
-      console.log('error status:  ' + error.status);
+      // console.log('error status:  ' + error.status);
     });
   }
 
@@ -58,9 +58,9 @@ export class PhotosComponent implements OnInit {
     let reader = new FileReader();
     if(event.target.files && event.target.files.length > 0) {
       let file = event.target.files[0];
-      console.log(file);
-      if (file.size > 10 * 1024 * 1024) {
-        alert('File is too big! max is 10 mb');
+      // console.log(file);
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File is too big! max is 5 mb');
         this.resetPhoto();
       } else if (file.type != "image/jpeg") {
         alert('Invelid file format! only jpeg');

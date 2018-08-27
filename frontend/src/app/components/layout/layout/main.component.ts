@@ -20,7 +20,7 @@ export class MainComponent {
   }
 
   ngOnInit() {
-    console.log('init main');
+    // console.log('init main');
   	this.profileService.get().subscribe(response => {
 
 
@@ -38,15 +38,15 @@ export class MainComponent {
   						let lng =  position.coords.longitude;
               that.profileService.updateCoords(lat, lng).subscribe(response => {
                   if (response['success'] == 1) {
-        						console.log("main comp: get from browser and update db:" + lat + ", " + lng);
+        						// console.log("main comp: get from browser and update db:" + lat + ", " + lng);
 					        } else {
-					            console.log('error! cant update coordinates');
+					            // console.log('error! cant update coordinates');
 					        }
 					    });
   					},
   					function(error_message) {
   						// if user deniad geolocation in browser
-  						console.log('user denied geolocation');
+  						// console.log('user denied geolocation');
   						that.getIP().subscribe(response => {
   							let IP_adress = response['ip'];
   							that.getLocationByIP(IP_adress).subscribe(response => {
@@ -55,7 +55,7 @@ export class MainComponent {
 		  						that.profileService.updateCoords(lat, lng).subscribe(response => {
 							        if (response['success'] == 1) {
 							        } else {
-							            console.log('error! cant update coordinates');
+							            // console.log('error! cant update coordinates');
 							        }
 							    });
   							});
@@ -64,7 +64,7 @@ export class MainComponent {
   				);
   			} else {
   				// if broser does not support geolocation
-  				console.log('browser doesnt suport geolocation');
+  				// console.log('browser doesnt suport geolocation');
             that.getIP().subscribe(response => {
               let IP_adress = response['ip'];
               that.getLocationByIP(IP_adress).subscribe(response => {
@@ -73,7 +73,7 @@ export class MainComponent {
                 that.profileService.updateCoords(lat, lng).subscribe(response => {
                     if (response['success'] == 1) {
                     } else {
-                        console.log('error! cant update coordinates');
+                        // console.log('error! cant update coordinates');
                     }
                 });
               });
@@ -84,7 +84,7 @@ export class MainComponent {
 
   		} else {
   			// if we cannot get profiele data or geotype is manual
-  			console.log('geolocation is set to manual or cant get user');
+  			// console.log('geolocation is set to manual or cant get user');
       }
 
   	});

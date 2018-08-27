@@ -44,20 +44,20 @@ export class LocationComponent implements OnInit {
               let lng =  position.coords.longitude;
               that.profileService.updateCoords(lat, lng).subscribe(response => {
                   if (response['success'] == 1) {
-                    console.log("main comp: get from browser and update db:" + lat + ", " + lng);
+                    // console.log("main comp: get from browser and update db:" + lat + ", " + lng);
                     that.geo_lat = lat;
                     that.geo_lng = lng;
                     that.geo_lat_marker = lat;
                     that.geo_lng_marker = lng;
                     that.markerUploaded = true;
                   } else {
-                      console.log('error! cant update coordinates');
+                      // console.log('error! cant update coordinates');
                   }
               });
             },
             function(error_message) {
               // if user deniad geolocation in browser
-              console.log('user denied geolocation');
+              // console.log('user denied geolocation');
               that.getIP().subscribe(response => {
                 let IP_adress = response['ip'];
                 that.getLocationByIP(IP_adress).subscribe(response => {
@@ -71,7 +71,7 @@ export class LocationComponent implements OnInit {
                   that.profileService.updateCoords(lat, lng).subscribe(response => {
                       if (response['success'] == 1) {
                       } else {
-                          console.log('error! cant update coordinates');
+                          // console.log('error! cant update coordinates');
                       }
                   });
                 });
@@ -80,7 +80,7 @@ export class LocationComponent implements OnInit {
           );
         } else {
           // if broser does not support geolocation
-          console.log('broeser doesnt suport geolocatio');
+          // console.log('broeser doesnt suport geolocatio');
             that.getIP().subscribe(response => {
               let IP_adress = response['ip'];
               that.getLocationByIP(IP_adress).subscribe(response => {
@@ -94,7 +94,7 @@ export class LocationComponent implements OnInit {
                 that.profileService.updateCoords(lat, lng).subscribe(response => {
                     if (response['success'] == 1) {
                     } else {
-                        console.log('error! cant update coordinates');
+                        // console.log('error! cant update coordinates');
                     }
                 });
               });
@@ -104,7 +104,7 @@ export class LocationComponent implements OnInit {
 
       } else {
         // if we cannot get profiele data or geo-type is manual
-        console.log('geolocation is set to manual');
+        // console.log('geolocation is set to manual');
         let result = response['result'];
         this.geo_type = result['geo_type'];
         this.geo_lat = parseFloat(result['geo_lat']);
@@ -134,20 +134,20 @@ export class LocationComponent implements OnInit {
                   let lng =  position.coords.longitude;
                   that.profileService.updateCoords(lat, lng).subscribe(response => {
                       if (response['success'] == 1) {
-                        console.log("main comp: get from browser and update db:" + lat + ", " + lng);
+                        // console.log("main comp: get from browser and update db:" + lat + ", " + lng);
                         that.geo_lat = lat;
                         that.geo_lng = lng;
                         that.geo_lat_marker = lat;
                         that.geo_lng_marker = lng;
                         that.markerUploaded = true;
                       } else {
-                          console.log('error! cant update coordinates');
+                          // console.log('error! cant update coordinates');
                       }
                   });
                 },
                 function(error_message) {
                   // if user deniad geolocation in browser
-                  console.log('user denied geolocation');
+                  // console.log('user denied geolocation');
                   that.getIP().subscribe(response => {
                     let IP_adress = response['ip'];
                     that.getLocationByIP(IP_adress).subscribe(response => {
@@ -161,7 +161,7 @@ export class LocationComponent implements OnInit {
                       that.profileService.updateCoords(lat, lng).subscribe(response => {
                           if (response['success'] == 1) {
                           } else {
-                              console.log('error! cant update coordinates');
+                              // console.log('error! cant update coordinates');
                           }
                       });
                     });
@@ -170,7 +170,7 @@ export class LocationComponent implements OnInit {
               );
             } else {
               // if broser does not support geolocation
-              console.log('broeser doesnt suport geolocatio');
+              // console.log('broeser doesnt suport geolocatio');
                 that.getIP().subscribe(response => {
                   let IP_adress = response['ip'];
                   that.getLocationByIP(IP_adress).subscribe(response => {
@@ -184,7 +184,7 @@ export class LocationComponent implements OnInit {
                     that.profileService.updateCoords(lat, lng).subscribe(response => {
                         if (response['success'] == 1) {
                         } else {
-                            console.log('error! cant update coordinates');
+                            // console.log('error! cant update coordinates');
                         }
                     });
                   });
@@ -193,7 +193,7 @@ export class LocationComponent implements OnInit {
 
           }
         } else {
-            console.log('error! not updated');
+            // console.log('error! not updated');
         }
     });
   }
@@ -202,7 +202,7 @@ export class LocationComponent implements OnInit {
     this.profileService.updateCoords(this.geo_lat_marker, this.geo_lng_marker).subscribe(response => {
         if (response['success'] == 1) {
         } else {
-            console.log('error! not updated');
+            // console.log('error! not updated');
         }
     });
   }
@@ -218,7 +218,7 @@ export class LocationComponent implements OnInit {
           this.geo_lat_marker = event.coords.lat;
           this.geo_lng_marker = event.coords.lng;
         } else {
-            console.log('error! not updated');
+            // console.log('error! not updated');
         }
     });
   }

@@ -17,8 +17,8 @@
 
 
 div.photo-avatar {
-	width: 450px;
-	height: 400px;
+	/*width: 450px;*/
+	/*height: 400px;*/
 	display: block;
 	margin: 2px;
 	border-width: 2px;
@@ -36,12 +36,12 @@ div.photo-small-avatar {
 
 .mate {
 	border: 1px gray solid;
-	height: 143px;
+	/*height: 143px;*/
 	width: 90%;
 }
 
 div.photo {
-	width: 150px;
+	/*width: 150px;*/
 	height: 100px;
 	display: inline-block;
 	margin: 2px;

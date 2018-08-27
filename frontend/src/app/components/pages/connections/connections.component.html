@@ -95,16 +95,16 @@
 			  <label class="form-check-label" for="i_dislike_flag">Maked dislikes</label>
 			</div>
 			<div>
-				<button type="submit" class="btn">Search</button>
+				<button type="submit" class="btn btn-success">Search</button>
 			</div>
 
 
 		</form>
 	</div>
 	<div class="col-sm-8">
-		<div>
-			<h6 class="d-sm-inline-block">SEARCH RESULTS:</h6>
-			<div *ngIf="finded_mates.length > 0 || page > 1" class="d-sm-inline-block paginator">
+		<div class="row">
+			<div class="col-sm-6"><h6 class="d-sm-inline-block">SEARCH RESULTS:</h6></div>
+			<div *ngIf="finded_mates.length > 0 || page > 1" class="d-sm-inline-block paginator col-sm-6">
 				<button type="button" class="btn btn-primary" (click)="prevPage()" [disabled]="page == 1">Prev</button>
 				Page: {{page}}
 				<button type="button" class="btn btn-primary" (click)="nextPage()" >Next</button>
@@ -117,7 +117,6 @@
 						<img class="fitdiv" src="data:image/jpeg;base64,{{mate.avatar_src}}">
 						<div *ngIf="mate.online_status"> online </div>
 						<div *ngIf="!mate.online_status"> offline </div>
-						<div> id: {{mate.user_id}} </div>
 					</div>
 				</div>
 				<div class="col-sm-5">

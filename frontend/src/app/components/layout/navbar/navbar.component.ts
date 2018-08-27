@@ -17,18 +17,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     let that = this;
     this.timeoutId = setTimeout(function updateNotifCount() {
-      console.log('new timeout with id:' + that.timeoutId)
-      console.log('alert 1 sec');
+      // console.log('new timeout with id:' + that.timeoutId)
+      // console.log('alert 1 sec');
 
       that.notificationsService.getNotifCount().subscribe(response => {
-        console.log(response);
+        // console.log(response);
 
         if (response['success'] == 1) {
           let result = response['result']
           that.notifCount['new_msg'] = result['new_msg'];
           that.notifCount['new_notif'] = result['new_notif'];
         } else {
-          alert('some error');
+          // alert('some error');
         }
 
       });
@@ -41,7 +41,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
         if (this.timeoutId) {
-          console.log('clear timeout with id:' + this.timeoutId)
+          // console.log('clear timeout with id:' + this.timeoutId)
           clearTimeout(this.timeoutId);
         }
   }

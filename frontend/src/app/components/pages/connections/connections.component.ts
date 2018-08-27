@@ -136,7 +136,7 @@ export class ConnectionsComponent implements OnInit {
   	}
     this.exploreService.searchConnections(args).subscribe(response => {
         if (response['success'] == 1) {
-            console.log(response);
+            // console.log(response);
             this.finded_mates = response['result'];
             if (response['result'] == null) {
               this.finded_mates = [];
@@ -250,7 +250,7 @@ export class ConnectionsComponent implements OnInit {
   showAccount(mate_id) {
     this.exploreService.getMate(mate_id, 1).subscribe(response => {
         if (response['success'] == 1) {
-            console.log(response);
+            // console.log(response);
             this.account_shown = true;
             this.account_shown_id = mate_id;
             this.account_info = response['result'];
@@ -275,7 +275,7 @@ export class ConnectionsComponent implements OnInit {
   likeFromAccount(mate_id) {
     this.exploreService.like(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(1, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -286,7 +286,7 @@ export class ConnectionsComponent implements OnInit {
   unlikeFromAccount(mate_id) {
     this.exploreService.unlike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(null, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -297,7 +297,7 @@ export class ConnectionsComponent implements OnInit {
   dislikeFromAccount(mate_id) {
     this.exploreService.dislike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(2, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -308,7 +308,7 @@ export class ConnectionsComponent implements OnInit {
   undislikeFromAccount(mate_id) {
     this.exploreService.undislike(mate_id).subscribe(response => {
         if (response['success'] == 1) {
-          console.log(response);
+          // console.log(response);
           this.updateActions(null, response['result']['action_to_user']);
         } else {
           alert('some error');
@@ -321,7 +321,7 @@ export class ConnectionsComponent implements OnInit {
     } else {
       this.exploreService.report(mate_id).subscribe(response => {
           if (response['success'] == 1) {
-            console.log(response);
+            // console.log(response);
             this.updateActions(3, response['result']['action_to_user']);
           } else {
             alert('some error');

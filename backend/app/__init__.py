@@ -481,8 +481,8 @@ def profile_update():
     username = request.json.get('username')
     fname = request.json.get('fname')
     sname = request.json.get('sname')
-    gender = int(request.json.get('gender', '0'))
-    sex_preference = int(request.json.get('sex_preference', '0'))
+    gender = int(request.json.get('gender', 0))
+    sex_preference = int(request.json.get('sex_preference', 0))
     birth = request.json.get('birth')
     phone = request.json.get('phone')
     bio = request.json.get('bio')
@@ -706,7 +706,7 @@ def profile_update_password():
     # authorized user id
     user_id = auth_result['user_id']
 
-    password = request.json.get('password').encode('utf8')
+    password = request.json.get('password', '').encode('utf8')
     new_password  = request.json.get('new_password')
     repeat_password  = request.json.get('repeat_password')
 
@@ -1200,6 +1200,7 @@ def search_mates():
         and not users.id in (select user_id_1 from likes where user_id_2={:d} and (action=2 or action=3))
         and users_info.geo_lat is not null
         and users_info.geo_lng is not null
+        and users.filled=2
         and distance < {:f}\n""".format(user_id, auth_user_info['geo_lat'], auth_user_info['geo_lat'], auth_user_info['geo_lng'], user_id, user_id, user_id, user_id, radius)
 
 

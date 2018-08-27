@@ -72,7 +72,7 @@ export class ViewComponent implements OnInit {
 	this.profileService.get().subscribe(response => {
 		if (response['success'] == 1) {
 			let result = response['result'];
-			console.log(result);
+			// console.log(result);
 			this.username = result['username'];
 			this.fname = result['fname'];
 			this.sname = result['sname'];
