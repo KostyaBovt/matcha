@@ -102,7 +102,7 @@ Vagrant.configure("2") do |config|
     sudo /vagrant/backend/app_venv/bin/pip install uwsgi flask Flask-Mail simplejson psycopg2-binary validate_email pyDNS Pillow
 
     # config nginx by copy config
-    sudo cp /vagrant/backend/config/nginx_config.conf /etc/nginx/sites-available/matcha
+    sudo cp /vagrant/backend/config/nginx_config_build.conf /etc/nginx/sites-available/matcha
     sudo ln -s /etc/nginx/sites-available/matcha /etc/nginx/sites-enabled
     sudo rm /etc/nginx/sites-enabled/default
 
