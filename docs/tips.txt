@@ -38,3 +38,6 @@ Validation where we use get(key, default) done
 
 
 make it good for correcction
+
+make db dump:
+pg_dump --column-inserts -d matcha > all_db_dump.sql
