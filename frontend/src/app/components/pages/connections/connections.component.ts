@@ -58,6 +58,8 @@ export class ConnectionsComponent implements OnInit {
   account_info: Object = {};
   current_main_photo: string = '';
 
+  loading: number = 0;
+
   constructor(private http: HttpClient, private profileService: ProfileService, private exploreService: ExploreService) { }
 
   ngOnInit() {
@@ -134,15 +136,18 @@ export class ConnectionsComponent implements OnInit {
 	    'page': this.page,
 	    'online': this.online
   	}
+    this.loading = 1;
     this.exploreService.searchConnections(args).subscribe(response => {
         if (response['success'] == 1) {
             // console.log(response);
             this.finded_mates = response['result'];
+            this.loading = 0;
             if (response['result'] == null) {
               this.finded_mates = [];
             }
         } else {
         	alert('some error');
+          this.loading = 0;
         }
     });
   }

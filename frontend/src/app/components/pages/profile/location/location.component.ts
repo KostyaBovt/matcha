@@ -25,7 +25,7 @@ export class LocationComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log('init location');
+    // console.log('init location');
 
     // need this just only to get curent location again after we done this in main component
     this.profileService.get().subscribe(response => {

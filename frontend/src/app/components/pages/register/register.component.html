@@ -45,7 +45,10 @@
 					<input class="form-control" name="password" type="password" [(ngModel)]="password" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
 				</div>
 			</div>
-			<div><button type="submit" class="btn btn-success" placement="right" ngbTooltip="Tooltip on right">Register</button></div>
+			<div>
+				<button type="submit" class="btn btn-success" placement="right" ngbTooltip="Tooltip on right" [disabled]="loading == 1">Register</button>
+				<i *ngIf="loading == 1" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
+			</div>
 		</form>
 		<h3>{{ registered }}</h3>
 	</div>

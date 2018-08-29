@@ -41,3 +41,8 @@ make it good for correcction
 
 make db dump:
 pg_dump --column-inserts -d matcha > all_db_dump.sql
+
+
+TODO: add and commit on master changes in src
+pdate all in matcha_git and push to vogsphere
+test

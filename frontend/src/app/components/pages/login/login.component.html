@@ -13,7 +13,8 @@
 				<div class="col-sm-6"><input class="form-control"  name="password" type="password" [(ngModel)]="password"></div>
 			</div>
 			<div>
-				<button type="submit" class="btn btn-success">Login</button>
+				<button type="submit" class="btn btn-success" [disabled]="loading == 1">Login</button>
+				<i *ngIf="loading == 1" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
 				<button routerLink="/register" type="button" class="btn btn-info">Register</button>
 				<button routerLink="/forgot" type="button" class="btn btn-info">Forgot password?</button>
 			</div>

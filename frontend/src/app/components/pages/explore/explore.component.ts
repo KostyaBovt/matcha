@@ -58,6 +58,7 @@ export class ExploreComponent implements OnInit {
   filled: number = 2;
   avatar: number = 1;
 
+  loading: number = 0;
 
   constructor(private http: HttpClient, private profileService: ProfileService, private exploreService: ExploreService) { }
 
@@ -187,7 +188,7 @@ export class ExploreComponent implements OnInit {
 
   searchMatesInitial() {
     this.page = 1;
-    this.searchMates(); 
+    this.searchMates();
   }
 
   searchMates() {
@@ -210,14 +211,17 @@ export class ExploreComponent implements OnInit {
     'page': this.page,
     'online': this.online
   	}
+    this.loading = 1;
     this.exploreService.searchMates(args).subscribe(response => {
         if (response['success'] == 1) {
             // console.log(response);
             this.finded_mates = response['result'];
+            this.loading = 0;
             if (response['result'] == null) {
               this.finded_mates = [];
             }
         } else {
+          this.loading = 0;
         	alert('some error');
         }
     });

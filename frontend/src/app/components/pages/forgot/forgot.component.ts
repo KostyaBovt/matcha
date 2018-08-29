@@ -9,6 +9,7 @@ import { UserService } from '../../../services/user.service';
 export class ForgotComponent implements OnInit {
   sended: string;
   email: string;
+  loading: number = 0;
 
   errors: Object = {};
 
@@ -19,15 +20,18 @@ export class ForgotComponent implements OnInit {
   }
 
   sendForgot() {
-  	this.sended = 'Sending reset password email'
+  	this.sended = 'Sending reset password email';
+    this.loading = 1;
     this.userService.sendForgot(this.email).subscribe(response => {
       if (response['success'] == 1) {
         this.sended = 'Check you email to reset password';
         this.email = '';
         this.errors = {};
+        this.loading = 0;
       } else {
         this.errors = response['errors'];
         this.sended = 'Something went wrong...Check the email.';
+        this.loading = 0;
       }
     });
   }

@@ -22,7 +22,10 @@
 					<input class="form-control"  name="repeat_password" type="password" [(ngModel)]="repeat_password" (focus)="onFocus($event)" (focusout)="onFocusOut($event)">
 				</div>
 			</div>
-			<div><button type="submit" class="btn btn-success">Confirm</button></div>
+			<div>
+				<button type="submit" class="btn btn-success" [disabled]="loading == 1">Confirm</button>
+				<i *ngIf="loading == 1" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
+			</div>
 		</form>
 		<h3>{{ message }}</h3>
 	</div>

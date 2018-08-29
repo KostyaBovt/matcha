@@ -19,6 +19,8 @@ export class ResetComponent implements OnInit {
   active: Object = {};
   errors: Object = {};
 
+  loading: number = 0;
+
   constructor(private route: ActivatedRoute, private userService: UserService) {
   }
 
@@ -40,14 +42,17 @@ export class ResetComponent implements OnInit {
 
   reset() {
     this.message= "";
+    this.loading = 1;
     this.userService.reset(this.email_hash, this.reset_hash, this.password, this.repeat_password).subscribe(response => {
       if (response['success'] == 1) {
         this.password = "";
         this.repeat_password = "";
         this.message = 'Your password was updated';
         this.errors = "";
+        this.loading = 0;
       } else {
         this.errors = response['errors'];
+        this.loading = 0;
         this.message = 'Failed! try again';
       }
     });

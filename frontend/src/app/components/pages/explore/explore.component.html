@@ -79,7 +79,8 @@
 			  <label class="form-check-label" for="online">Only online users</label>
 			</div>
 			<div>
-				<button type="submit" class="btn btn-success" [disabled]="filled == 1 || !avatar">Search</button>
+				<button type="submit" class="btn btn-success" [disabled]="filled == 1 || !avatar || loading == 1">Search</button>
+				<i *ngIf="loading == 1" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
 			</div>
 
 

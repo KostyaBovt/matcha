@@ -95,8 +95,16 @@ export class ModifyComponent implements OnInit {
             this.username = result['username'];
             this.fname = result['fname'];
             this.sname = result['sname'];
-            this.gender = result['gender'];
-            this.sex_preference = result['sex_preference'];
+            if (!result['gender']) {
+              this.gender = 0;
+            } else {
+              this.gender = result['gender'];
+            }
+            if (!result['sex_preference']) {
+              this.sex_preference = 0;
+            } else {
+              this.sex_preference = result['sex_preference'];
+            }
             this.email = result['email'];
             this.phone = result['phone'];
             this.bio = result['bio'];

@@ -13,6 +13,8 @@ export class PhotosComponent implements OnInit {
   photoUploaded : number = 0;
 
   photos: Array<any>;
+  loading: number = 0;
+  init_loading: number = 0;
 
   @ViewChild('fileInput') fileInput: ElementRef;
 
@@ -23,22 +25,27 @@ export class PhotosComponent implements OnInit {
   }
 
   loadPhotos() {
+    this.init_loading = 1;
     this.profileService.getProfilePhotos().subscribe(response => {
       if (response['success'] == 1) {
         this.photos = response['photos'];
       }
+      this.init_loading = 0;
     });
   }
 
   uploadPhoto() {
+    this.loading = 1;
     this.profileService.uploadPhoto(this.photoName, this.photoType, this.photoValue).subscribe(response => {
         if (response['success'] == 1) {
             this.photoUploaded = 1;
             this.resetPhoto();           
             this.loadPhotos();
+            this.loading = 0;
         } else {
             alert('cannot upload this photo');
             this.resetPhoto();
+            this.loading = 0;
             // this.photoUploaded = 2;
         }
     }, error => {

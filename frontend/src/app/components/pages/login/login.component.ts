@@ -11,6 +11,7 @@ export class LoginComponent implements OnInit {
   username: string;
   password: string;
   message: string;
+  loading: number = 0;
 
   constructor(public userService: UserService, private router: Router) { }
 
@@ -48,15 +49,18 @@ export class LoginComponent implements OnInit {
 
   login() {
     this.message = '';
+    this.loading = 1;
     this.userService.login(this.username, this.password).subscribe(response => {
       if (response['success'] == 1) {
         this.username = "";
         this.password = "";
         this.message = "";
         localStorage.setItem('token', response['token']);
+        this.loading = 0;
         this.userService.isLoggedIn = true;
         this.router.navigate(['/explore']);
       } else {
+        this.loading = 0;
         this.message = 'Login Failed! try again';
       }
     });

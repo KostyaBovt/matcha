@@ -14,7 +14,10 @@
 					<input class="form-control" name="email" type="text" [(ngModel)]="email">
 				</div>
 			</div>
-			<div><button type="submit" class="btn btn-success">Send</button></div>
+			<div>
+				<button type="submit" class="btn btn-success" [disabled]="loading == 1">Send</button>
+				<i *ngIf="loading == 1" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
+			</div>
 		</form>
 		<h3>{{ sended }}</h3>
 	</div>

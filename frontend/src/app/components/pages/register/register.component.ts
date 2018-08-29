@@ -15,6 +15,7 @@ export class RegisterComponent implements OnInit {
   sname: string;
   password: string;
   registered: string;
+  loading: number = 0;
 
   active: Object = {};
   errors: Object = {};
@@ -32,6 +33,7 @@ export class RegisterComponent implements OnInit {
 
   register() {
     this.registered = "";
+    this.loading = 1;
     this.userService.register(this.username, this.fname, this.sname, this.email, this.password).subscribe(response => {
       if (response['success'] == 1) {
         this.errors = {};
@@ -41,8 +43,10 @@ export class RegisterComponent implements OnInit {
         this.sname = "";
         this.password = "";
         this.registered = 'Please confirm registration via email!';
+        this.loading = 0;
       } else {
         this.errors = response['errors'];
+        this.loading = 0;
         this.registered = 'Failed! try again';
       }
     });

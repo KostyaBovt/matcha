@@ -5,6 +5,7 @@
 <h6 *ngIf="!photos || !photos.length">(max 5 photos)</h6>
 
 <div>
+	<div><i *ngIf="init_loading == 1" class="fa fa-spinner fa-spin" style="font-size:24px"></i><div>
 	<div class="photo" *ngFor="let photo of photos">
 		<img class="fitdiv" src="data:image/jpeg;base64,{{photo.src}}">
 		<div class="bottom_buttons">
@@ -17,7 +18,8 @@
 	<form *ngIf="!photos || photos.length < 5" (ngSubmit)="uploadPhoto()" #uploadPhotoForm="ngForm">
 		<input class="form-control" type="file" accept="image/jpeg" name="photo" id="avatar" (change)="onFileChange($event)" #fileInput>
 		<div>
-			<button type="submit" class="btn btn-success" [disabled]="!photoName">Add Photo</button>
+			<button type="submit" class="btn btn-success" [disabled]="!photoName || loading == 1">Add Photo</button>
+			<i *ngIf="loading == 1" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
 			<div *ngIf="photoUploaded == 1">photo was uploaded</div>
 		</div>
 	</form>
